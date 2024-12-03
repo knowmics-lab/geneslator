@@ -1,5 +1,5 @@
 Package: geneslator.package
-Title: GENESLATOR: A tool for accurate gene name conversion 
+Title: GENESLATOR: A tool for accurate gene name conversion for Homo sapiens and Mus musculus
 Version: 1.2
 Authors@R: 
     person("Cavallaro", "Alaimo", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
