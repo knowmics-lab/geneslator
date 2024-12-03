@@ -1,6 +1,6 @@
 Package: geneslator.package
 Title: GENESLATOR: A tool for accurate gene name conversion 
-Version: 0.0.0.9000
+Version: 1.2
 Authors@R: 
     person("Cavallaro", "Alaimo", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
            comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368"))
