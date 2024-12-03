@@ -1,0 +1,7 @@
+# Install devtools if not already installed
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
+
+# Install geneslator.package from GitHub
+devtools::install_github("giucava/geneslator.package")
