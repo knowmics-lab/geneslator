@@ -1,4 +1,4 @@
-Package: geneslator.package
+Package: Geneslator
 Title: GENESLATOR: A tool for accurate gene name conversion for Homo sapiens and Mus musculus
 Version: 1.2
 Authors@R: 
