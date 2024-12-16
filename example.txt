@@ -1,5 +1,0 @@
-# Example usage
-# list_ensembl <- c("ENSG00000139618", "ENSG00000155657")  # Example Ensembl gene IDs
-# keyid <- "ensembl_gene_id"
-# outputid <- c("ensembl_gene_id", "entrezgene_id")
-# filtered_result <- conversion_id_genes(list_ensembl, keyid, outputid)

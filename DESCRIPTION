@@ -1,10 +1,13 @@
 Package: Geneslator
-Title: GENESLATOR: A tool for accurate gene name conversion for Homo sapiens and Mus musculus
+Title: Geneslator: A tool for accurate gene name conversion for Homo sapiens and Mus musculus
 Version: 1.2
-Authors@R: 
-    person("Cavallaro", "Alaimo", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
-           comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368"))
-Description: This package allows the user to convert gene Ensembl IDs into gene symbols or Entrez IDs for Homo sapiens.
+Authors@R:c(person("Giulia", "Cavallaro", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
+               comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368")),
+        person("Grete Francesca", "Privitera", role = "aut"),
+        person("Alfredo", "Pulvirenti", role = "aut"),
+        person("Stefano", "Forte", role = "aut"),
+        person("Salvatore", "Alaimo", role = "aut"))
+Description: This package enables users to convert various types of gene identifiers, such as Ensembl IDs, Entrez IDs, and gene symbols, into one another, facilitating seamless integration and analysis of gene-related data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
