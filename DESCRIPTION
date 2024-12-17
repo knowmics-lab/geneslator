@@ -1,6 +1,6 @@
 Package: Geneslator
 Title: Geneslator: A tool for accurate gene name conversion for Homo sapiens and Mus musculus
-Version: 1.2
+Version: 1.3
 Authors@R:c(person("Giulia", "Cavallaro", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
                comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368")),
         person("Grete Francesca", "Privitera", role = "aut"),
