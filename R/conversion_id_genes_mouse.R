@@ -27,7 +27,7 @@ conversion_id_genes_mouse <- function(list_ensembl, keyid, outputid) {
   library(dplyr)
   
   # Percorso al database mouse
-  sqlite_path_mouse <- system.file("extdata", "mgeneslator.sqlite", package = "geneslator.package")
+  sqlite_path_mouse <- system.file("extdata", "mgeneslator.sqlite", package = "Geneslator")
   
   # Verifica che il file esista
   if (!file.exists(sqlite_path_mouse)) {
