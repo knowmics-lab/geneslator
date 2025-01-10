@@ -26,26 +26,12 @@ library(Geneslator)
 ```
 
 ``` r
-suppressMessages(suppressWarnings({
-  suppressPackageStartupMessages(library(dplyr))
-  suppressPackageStartupMessages(library(tidyr))}
-  ))
-  
-```
-
-``` r
 #Homo sapiens
 
 list_ensembl <- c("ENSG00000139618", "ENSG00000157764")
 keyid <- "ENSEMBL"
 outputid <- c("ENSEMBL", "SYMBOL")
 conversion_result <- conversion_id_genes(list_ensembl, keyid, outputid)
-#> Warning: il pacchetto 'dbplyr' è stato creato con R versione 4.3.1
-#> 
-#> Caricamento pacchetto: 'dbplyr'
-#> I seguenti oggetti sono mascherati da 'package:dplyr':
-#> 
-#>     ident, sql
 
 #Mus musculus
 list <- c("Pzp","Igkv13-84")

@@ -42,7 +42,7 @@ devtools::install_github("giucava/geneslator.package")
 library(Geneslator)
 ```
 
-```{r}
+```{r, include=FALSE}
 suppressMessages(suppressWarnings({
   suppressPackageStartupMessages(library(dplyr))
   suppressPackageStartupMessages(library(tidyr))}
@@ -50,7 +50,7 @@ suppressMessages(suppressWarnings({
   
 ```
 
-```{r}
+```{r, warning=F, message=F}
 #Homo sapiens
 
 list_ensembl <- c("ENSG00000139618", "ENSG00000157764")
