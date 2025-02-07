@@ -27,7 +27,7 @@ conversion_id_genes_mouse<-function (list_ensembl, keyid, outputid)
   library(dbplyr)
   library(RSQLite)
   table_name <- "geneslator"
-  sqlite_path <- system.file("extdata", "geneslator.sqlite", 
+  sqlite_path <- system.file("extdata", "mgeneslator.sqlite", 
                              package = "Geneslator")
   if (!file.exists(sqlite_path)) {
     stop("The SQLite database file does not exist: ", sqlite_path)
