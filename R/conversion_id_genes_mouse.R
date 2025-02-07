@@ -21,40 +21,27 @@
 #' }
 #' @export
 
-
-conversion_id_genes_mouse <- function(list_ensembl, keyid, outputid) {
-  library(RSQLite)
+conversion_id_genes_mouse<-function (list_ensembl, keyid, outputid) 
+{
   library(dplyr)
-  
-  # Percorso al database mouse
-  sqlite_path_mouse <- system.file("extdata", "mgeneslator.sqlite", package = "Geneslator")
-  
-  # Verifica che il file esista
-  if (!file.exists(sqlite_path_mouse)) {
-    stop("Il database mgeneslator.sqlite non è stato trovato.")
+  library(dbplyr)
+  library(RSQLite)
+  table_name <- "geneslator"
+  sqlite_path <- system.file("extdata", "geneslator.sqlite", 
+                             package = "Geneslator")
+  if (!file.exists(sqlite_path)) {
+    stop("The SQLite database file does not exist: ", sqlite_path)
   }
-  
-  # Connessione al database
-  conn <- dbConnect(SQLite(), sqlite_path_mouse)
+  conn <- DBI::dbConnect(SQLite(), sqlite_path)
   on.exit(dbDisconnect(conn), add = TRUE)
-  
-  # Nome della tabella
-  table_name <- "mgeneslator" 
-  
-  # Verifica se la tabella esiste
   tables <- dbListTables(conn)
-  if (!(table_name %in% tables)) {
-    stop(paste("La tabella", table_name, "non esiste nel database."))
+  if (!table_name %in% tables) {
+    stop("Table ", table_name, " does not exist in the database.")
   }
-  
-  # Riferimento alla tabella
   table <- tbl(conn, table_name)
-  
-  # Filtra i dati in base ai valori in list_ensembl
-  filtered_table <- table %>%
-    filter(!!sym(keyid) %in% list_ensembl) %>%
-    select(all_of(outputid)) %>%
-    collect()
-  
+  keyid_sym <- rlang::sym(keyid)
+  outputid_syms <- rlang::syms(outputid)
+  filtered_table <- table %>% dplyr::filter(!!keyid_sym %in% list_ensembl) %>% 
+    dplyr::select(!!!outputid_syms) %>% collect()
   return(filtered_table)
 }
