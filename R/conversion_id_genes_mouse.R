@@ -27,12 +27,12 @@ conversion_id_genes_mouse<-function (list_ensembl, keyid, outputid)
   library(dbplyr)
   library(RSQLite)
   table_name <- "geneslator"
-  sqlite_path <- system.file("extdata", "mgeneslator.sqlite", 
+  sqlite_path_mouse <- system.file("extdata", "mgeneslator.sqlite", 
                              package = "Geneslator")
-  if (!file.exists(sqlite_path)) {
-    stop("The SQLite database file does not exist: ", sqlite_path)
+  if (!file.exists(sqlite_path_mouse)) {
+    stop("The SQLite database file does not exist: ", sqlite_path_mouse)
   }
-  conn <- DBI::dbConnect(SQLite(), sqlite_path)
+  conn <- DBI::dbConnect(SQLite(), sqlite_path_mouse)
   on.exit(dbDisconnect(conn), add = TRUE)
   tables <- dbListTables(conn)
   if (!table_name %in% tables) {
