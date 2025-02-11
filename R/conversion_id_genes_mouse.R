@@ -22,7 +22,7 @@
 #' @export
 
 conversion_id_genes_mouse <- function(list_ensembl, keyid, outputid) {
-  
+  library(dplyr)
   # Define the name of the table in the SQLite database
   table_name <- "mgeneslator"
   
