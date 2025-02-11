@@ -7,9 +7,9 @@
 conversion_id_genes(list_ensembl, keyid, outputid)
 }
 \arguments{
-\item{list_ensembl}{A list containing the values to filter with.}
+\item{list_ensembl}{A vector containing the values to filter with.}
 
-\item{keyid}{The column in the dataframe to use for filtering.}
+\item{keyid}{The column in the dataframe to use for filtering (e.g., "ENSEMBL").}
 
 \item{outputid}{A vector of column names to select.}
 }

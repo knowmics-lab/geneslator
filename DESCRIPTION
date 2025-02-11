@@ -1,17 +1,25 @@
 Package: Geneslator
-Title: Geneslator: A tool for accurate gene name conversion for Homo sapiens and Mus musculus
-Version: 1.3
-Authors@R:c(person("Giulia", "Cavallaro", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
-               comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368")),
-        person("Grete Francesca", "Privitera", role = "aut"),
-        person("Alfredo", "Pulvirenti", role = "aut"),
-        person("Stefano", "Forte", role = "aut"),
-        person("Salvatore", "Alaimo", role = "aut"))
-Description: This package enables users to convert various types of gene identifiers, such as Ensembl IDs, Entrez IDs, and gene symbols, into one another, facilitating seamless integration and analysis of gene-related data.
+Title: Geneslator: A Tool for Accurate Gene Name Conversion for Homo sapiens and Mus musculus
+Version: 1.0.1
+Authors@R: c(
+    person("Giulia", "Cavallaro", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
+           comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368")),
+    person("Grete Francesca", "Privitera", role = "aut"),
+    person("Alfredo", "Pulvirenti", role = "aut"),
+    person("Lorenzo", "Signorini", role = "aut"),
+    person("Stefano", "Forte", role = "aut"),
+    person("Salvatore", "Alaimo", role = "aut"))
+Description: Geneslator facilitates seamless conversion between various types of gene identifiers, 
+    including Ensembl IDs, Entrez IDs, and gene symbols, improving integration and analysis 
+    of gene-related data in bioinformatics workflows.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Suggests: 
-    testthat (>= 3.0.0)
+Depends: R (>= 4.0.0)
+Imports: dplyr, dbplyr, RSQLite, DBI
+Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
+LazyData: true
+URL: https://github.com/giucava/geneslator.package
+BugReports: https://github.com/giucava/geneslator.package/issues

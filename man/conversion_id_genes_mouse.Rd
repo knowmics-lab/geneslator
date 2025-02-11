@@ -7,7 +7,7 @@
 conversion_id_genes_mouse(list_ensembl, keyid, outputid)
 }
 \arguments{
-\item{list_ensembl}{A list of Ensembl gene IDs to filter.}
+\item{list_ensembl}{A vector of Ensembl gene IDs to filter.}
 
 \item{keyid}{The column in the dataframe to use for filtering (e.g., "ENSEMBL").}
 
