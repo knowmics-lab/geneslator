@@ -17,7 +17,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Depends: R (>= 4.0.0)
-Imports: dplyr, dbplyr, RSQLite, DBI
+Imports: dplyr, dbplyr, RSQLite, DBI, magrittr
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 LazyData: true
