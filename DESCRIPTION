@@ -21,5 +21,5 @@ Imports: dplyr, dbplyr, RSQLite, DBI, magrittr
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 LazyData: true
-URL: https://github.com/giucava/geneslator.package
-BugReports: https://github.com/giucava/geneslator.package/issues
+URL: https://github.com/knowmics-lab/geneslator
+BugReports: https://github.com/knowmics-lab/geneslator/issues

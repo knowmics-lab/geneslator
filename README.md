@@ -16,7 +16,7 @@ You can install the development version of Geneslator from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("giucava/geneslator.package")
+devtools::install_github("knowmics-lab/geneslator")
 ```
 
 ## Example
@@ -36,6 +36,6 @@ conversion_result <- conversion_id_genes(list_ensembl, keyid, outputid)
 #Mus musculus
 list <- c("Pzp","Igkv13-84")
 keyid <- "SYMBOL"
-outputid <- c("ENSEMBL", "SYMBOL", "Gene.type", "ENTREZID")
+outputid <- c("ENSEMBL", "SYMBOL", "Gene.type", "ENTREZID","Alias")
 conversion_result_mouse <- conversion_id_genes_mouse(list_ensembl, keyid, outputid)
 ```
