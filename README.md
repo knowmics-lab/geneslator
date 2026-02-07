@@ -1,7 +1,6 @@
 # geneslator <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/knowmics-lab/geneslator/workflows/R-CMD-check/badge.svg)](https://github.com/knowmics-lab/geneslator/actions)
 [![Codecov test coverage](https://codecov.io/gh/knowmics-lab/geneslator/branch/main/graph/badge.svg)](https://app.codecov.io/gh/knowmics-lab/geneslator?branch=main)
 [![License](https://img.shields.io/badge/license-Artistic--2.0-blue.svg)](https://opensource.org/licenses/Artistic-2.0)
 <!-- badges: end -->
@@ -47,7 +46,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("knowmics-lab/geneslator")
 ```
 
-## Quick Start
+## Usage examples
 
 ```r
 library(geneslator)
@@ -55,116 +54,28 @@ library(geneslator)
 # Check available organisms
 availableOrganisms()
 
-# Create a GeneslatorDb object (downloads database automatically if needed)
-gdb <- GeneslatorDb("Human")
-
-# Translate gene IDs using select()
-result <- select(gdb, 
-                 keys = c("ENSG00000139618", "ENSG00000141510"),
-                 columns = c("SYMBOL", "GENENAME"),
-                 keytype = "ENSEMBL")
-
-# Or using mapIds()
-symbols <- mapIds(gdb,
-                  keys = c("ENSG00000139618", "ENSG00000141510"),
-                  column = "SYMBOL",
-                  keytype = "ENSEMBL")
-```
-
-## Usage Examples
-
-### Identifier Conversion
-
-```r
-library(geneslator)
-
-# Load the database for human
+# Import human annotation database (download database automatically if needed)
 human.db <- GeneslatorDb("Human")
 
-# Convert Ensembl IDs to gene symbols
-genes <- c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618")
-result <- select(human.db, 
-                keys = genes,
-                columns = c("SYMBOL", "GENENAME", "ENTREZID"),
-                keytype = "ENSEMBL")
-print(result)
-```
+# Get gene symbols, full names and NCBI Gene IDs from Ensembl IDs using select()
+select(human.db, keys = c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618"),
+       columns = c("SYMBOL", "GENENAME", "ENTREZID"), keytype = "ENSEMBL")
 
-### Ortholog Mapping
+# Convert Ensembl IDs to gene symbols using mapIds()
+mapIds(gdb, keys = c("ENSG00000139618", "ENSG00000141510"), column = "SYMBOL",
+       keytype = "ENSEMBL")
 
-```r
 # Get mouse orthologs for human genes
-result <- select(human.db, 
-                keys = c("TP53", "BRCA1", "EGFR"),
-                columns = c("ORTHOMOUSE"),
-                keytype = "SYMBOL")
-print(result)
+select(human.db, keys = c("TP53", "BRCA1", "EGFR"), columns = c("ORTHOMOUSE"),
+       keytype = "SYMBOL")
 
-# Control the number of orthologs returned
-result_single <- select(human.db, 
-                       keys = c("TP53", "BRCA1"),
-                       columns = c("ORTHOMOUSE", "ORTHORAT"),
-                       keytype = "SYMBOL",
-                       orthologs.mapping = "single")
-```
+# Get GO annotations for a set of genes
+select(human.db, keys = c("7157", "672"), columns = c("SYMBOL", "GO", "GONAME"),
+       keytype = "ENTREZID")
 
-### Search with Aliases and Archived Identifiers
-
-```r
-# Search using aliases (BRCAI is an alias of BRCA1)
-result <- select(human.db, 
-                keys = c("BRCAI", "PTEN"),
-                columns = "ENTREZID",
-                keytype = "SYMBOL",
-                search.aliases = TRUE)
-
-# Search using old/archived identifiers
-result <- select(human.db, 
-                keys = "3",  # Old NCBI Gene ID for A2MP1
-                columns = "SYMBOL",
-                keytype = "ENTREZID",
-                search.archives = TRUE)
-```
-
-### Functional Annotation
-
-```r
-# Get GO annotations for specific genes
-result <- select(human.db, 
-                keys = c("7157", "672"),
-                columns = c("SYMBOL", "GO", "GONAME"),
-                keytype = "ENTREZID")
-
-# Get KEGG pathways
-result <- select(human.db, 
-                keys = c("TP53", "BRCA1"),
-                columns = c("KEGGPATH", "KEGGPATHNAME"),
-                keytype = "SYMBOL")
-```
-
-## Database Management
-
-### Automatic Download
-
-Annotation databases are automatically downloaded from https://github.com/knowmics-lab/geneslator/releases when needed and cached locally. Each database is approximately 5-50 MB depending on the organism.
-
-When you create a `GeneslatorDb` object:
-- If the database is not present in the local cache, it is automatically downloaded
-- If the database is present but a newer version is available, you will be asked if you want to update it
-- Files are saved in the R cache directory (visible with `tools::R_user_dir("geneslator", "cache")`)
-
-```r
-# First time downloads the database
-gdb <- GeneslatorDb("Human")
-
-# Subsequent times use the local cache
-gdb <- GeneslatorDb("Human")
-
-# Force version check
-gdb <- GeneslatorDb("Human", check_version = TRUE)
-
-# Skip version check
-gdb <- GeneslatorDb("Human", check_version = FALSE)
+# Get KEGG pathways for a set of genes
+select(human.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGGPATHNAME"),
+       keytype = "SYMBOL")
 ```
 
 ## Available Columns
@@ -221,9 +132,23 @@ columns(gdb)
 keytypes(gdb)
 ```
 
-## Database Versioning
+## Database Management
 
-Database versions are managed independently from the package. The package automatically checks for database updates when a `GeneslatorDb` object is created and notifies users when newer versions are available.
+Annotation databases are automatically downloaded from [<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator/releases>) 
+when needed and cached locally.
+
+When you import an annotation database in geneslator:
+- If the database is not present in the local cache, it is automatically downloaded
+- If the database is present but a newer version is available, you will be asked if you want to update it
+- Files are saved in the R cache directory (visible with `tools::R_user_dir("geneslator", "cache")`)
+
+```r
+# Import human database for the first time: the database is downloaded and saved in cache
+gdb <- GeneslatorDb("Human")
+
+# Import human database again: use file saved in local cache
+gdb <- GeneslatorDb("Human")
+```
 
 ## Documentation
 
