@@ -1,0 +1,13 @@
+CHANGES IN VERSION 0.99.0
+-------------------------
+
+NEW FEATURES
+
+    o Initial submission to Bioconductor.
+    o Provides comprehensive gene identifier conversion across NCBI, Ensembl, 
+      UniProt and organism-specific databases.
+    o Provides orthologs, gene ontology and pathways mapping for genes using Alliance 
+      of Genome Resources, GO, KEGG, Reactome and Wikipathways databases.
+    o Supports 8 model organisms: human, mouse, rat, 
+      yeast, worm, fly, zebrafish, and arabidopsis.
+    o Redefinition of select() and mapIds() query functions from AnnotationDbi package.

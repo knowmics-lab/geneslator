@@ -1,25 +1,20 @@
-Package: Geneslator
-Title: Geneslator: A Tool for Accurate Gene Name Conversion for Homo sapiens and Mus musculus
-Version: 1.0.1
-Authors@R: c(
-    person("Giulia", "Cavallaro", email = "giuliacavallaro96@outlook.it", role = c("aut", "cre"),
-           comment = c(ORCID = "https://orcid.org/0009-0000-1212-8368")),
-    person("Grete Francesca", "Privitera", role = "aut"),
-    person("Alfredo", "Pulvirenti", role = "aut"),
-    person("Lorenzo", "Signorini", role = "aut"),
-    person("Stefano", "Forte", role = "aut"),
-    person("Salvatore", "Alaimo", role = "aut"))
-Description: Geneslator facilitates seamless conversion between various types of gene identifiers, 
-    including Ensembl IDs, Entrez IDs, and gene symbols, improving integration and analysis 
-    of gene-related data in bioinformatics workflows.
-License: MIT + file LICENSE
+Package: geneslator
+Title: Geneslator, a tool for accurate gene name conversion
+Version: 0.99.0
+Description: Geneslator is a comprehensive R package that performs gene identifier conversion and ortholog mapping. 
+    The tool integrates multiple cross-organism databases (NCBI, Ensembl, UniProt, GO, KEGG, Reactome, Wikipathways) and organism-specific resources within a single, coherent framework. 
+    Geneslator currently supports the following organisms: human, mouse, rat, yeast, worm, fly, zebrafish and arabidopsis.
+Authors@R: c(person("Giovanni", "Micale", role=c("aut", "cre"), email="giovanni.micale@unict.it", comment=c(ORCID = "0000-0002-4953-026X")),
+    person("Giulia", "Cavallaro", role="aut", email="giuliacava96@gmail.com", comment=c(ORCID = "0009-0000-1212-8368")),
+    person("Grete Francesca", "Privitera", role="aut", email="grete.privitera@unict.it", comment=c(ORCID = "0000-0003-1807-4780")))
+License: Artistic-2.0
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
-Depends: R (>= 4.0.0)
-Imports: dplyr, dbplyr, RSQLite, DBI, magrittr
-Suggests: testthat (>= 3.0.0)
-Config/testthat/edition: 3
-LazyData: true
 URL: https://github.com/knowmics-lab/geneslator
+Depends: R (>= 4.4.0)
+Imports: AnnotationDbi, methods, IRanges, utils
+Suggests: testthat, knitr, rmarkdown, BiocStyle
+Roxygen: list(markdown = TRUE)
+VignetteBuilder: knitr
+biocViews: OrgDb, OrganismDb, AnnotationData, Homo_sapiens, Mus_musculus, Rattus_norvegicus, Caenorhabditis_elegans, Saccharomyces_cerevisiae, Drosophila_melanogaster, Danio_rerio, Arabidopsis_thaliana, Organism, zebrafish, PackageType
 BugReports: https://github.com/knowmics-lab/geneslator/issues
+RoxygenNote: 7.3.3
