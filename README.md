@@ -57,6 +57,12 @@ availableOrganisms()
 # Import human annotation database (download database automatically if needed)
 human.db <- GeneslatorDb("Human")
 
+# List all columns present in human annotation database 
+columns(human.db)
+
+# List all identifier columns present in human annotation database 
+keytypes(gdb)
+
 # Get gene symbols, full names and NCBI Gene IDs from Ensembl IDs using select()
 select(human.db, keys = c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618"),
        columns = c("SYMBOL", "GENENAME", "ENTREZID"), keytype = "ENSEMBL")
@@ -76,60 +82,6 @@ select(human.db, keys = c("7157", "672"), columns = c("SYMBOL", "GO", "GONAME"),
 # Get KEGG pathways for a set of genes
 select(human.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGGPATHNAME"),
        keytype = "SYMBOL")
-```
-
-## Available Columns
-
-Available columns for queries include (some may not be present in all organisms):
-
-**Basic Identifiers:**
-- `SYMBOL` - Official gene symbol
-- `ALIAS` - Gene aliases
-- `GENENAME` - Full gene name or description
-- `GENETYPE` - Biological type of gene (e.g. 'protein-coding', 'ncRNA')
-- `ENTREZID` - Gene ID in NCBI Gene
-- `ENSEMBL` - Gene ID in Ensembl
-- `UNIPROTKB` - Uniprot IDs of proteins associated with the gene
-
-**Organism-Specific Identifiers:**
-- `HGNC` - Gene ID in HUGO Gene Nomenclature Committee (Human only)
-- `MGI` - Gene ID in Mouse Genome Informatics (Mouse only)
-- `RGD` - Gene ID in Rat Genome Database (Rat only)
-- `SGD` - Gene ID in Saccharomyces Genome Database (Yeast only)
-- `WORMBASE` - Gene ID in WormBase database (Worm only)
-- `FLYBASE` - Gene ID in FlyBase database (Fly only)
-- `ZFIN` - Gene ID in Zebrafish Information Network (Zebrafish only)
-- `TAIR` - Gene ID in The Arabidopsis Information Resource (Arabidopsis only)
-
-**Archived Identifiers:**
-- `ENTREZIDOLD` - Archived IDs in NCBI Gene
-- `ENSEMBLOLD` - Archived IDs in Ensembl
-
-**Orthologs:**
-- `ORTHOHUMAN` - Orthologs in Human (absent in Human and Arabidopsis)
-- `ORTHOMOUSE` - Orthologs in Mouse (absent in Mouse and Arabidopsis)
-- `ORTHORAT` - Orthologs in Rat (absent in Rat and Arabidopsis)
-- `ORTHOYEAST` - Orthologs in Yeast (absent in Yeast and Arabidopsis)
-- `ORTHOWORM` - Orthologs in Worm (absent in Worm and Arabidopsis)
-- `ORTHOFLY` - Orthologs in Fly (absent in Fly and Arabidopsis)
-- `ORTHOZEBRAFISH` - Orthologs in Zebrafish (absent in Zebrafish and Arabidopsis)
-
-**Functional Annotations:**
-- `GO` - IDs of Gene Ontology (GO) terms associated with the gene
-- `GONAME` - Names of GO terms associated with the gene
-- `GOEVIDENCE` - Evidence codes of GO terms
-- `GOTYPE` - Types of GO terms ('BP'=biological process, 'CC'=cellular component, 'MF'=molecular function)
-- `KEGGPATH` - IDs of KEGG pathways associated with the gene
-- `KEGGPATHNAME` - Names of KEGG pathways associated with the gene
-- `REACTOMEPATH` - IDs of Reactome pathways associated with the gene
-- `REACTOMEPATHNAME` - Names of Reactome pathways associated with the gene
-- `WIKIPATH` - IDs of Wikipathways pathways associated with the gene
-- `WIKIPATHNAME` - Names of Wikipathways pathways associated with the gene
-
-For a complete list, use:
-```r
-columns(gdb)
-keytypes(gdb)
 ```
 
 ## Database Management
@@ -152,11 +104,13 @@ gdb <- GeneslatorDb("Human")
 
 ## Documentation
 
-For more information and detailed tutorials, see:
+```r
+# Package vignette:
+vignette("geneslator", package = "geneslator")
 
-- [Package vignette](https://knowmics-lab.github.io/geneslator)
-- [Function documentation](https://knowmics-lab.github.io/geneslator/reference)
-- [GitHub Issues](https://github.com/knowmics-lab/geneslator/issues)
+# Documentation:
+help(package = "geneslator")
+```
 
 ## Citation
 
@@ -183,7 +137,6 @@ University of Catania
 ## Support
 
 - **Issues**: https://github.com/knowmics-lab/geneslator/issues
-- **Documentation**: https://knowmics-lab.github.io/geneslator
 - **Email**: giovanni.micale@unict.it
 
 ## References
