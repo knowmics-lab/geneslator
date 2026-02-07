@@ -1,0 +1,337 @@
+---
+title: "Geneslator: An R package for comprehensive gene identifier conversion 
+and annotation"
+author:
+- name: Giovanni Micale
+  affiliation: University of Catania
+  email: giovanni.micale@unict.it
+- name: Giulia Cavallaro
+  affiliation: University of Catania
+  email: giuliacava96@gmail.com
+- name: Grete Francesca Privitera
+  affiliation: University of Catania
+  email: grete.privitera@unict.it
+date: "`r Sys.Date()`"
+package: geneslator
+abstract: >
+    Geneslator is a comprehensive R package designed for accurate gene 
+    identifier conversion and genome annotation across multiple organisms. 
+    The package integrates data from several cross-organism databases and 
+    organism-specific resources within a single, coherent framework. This 
+    vignette demonstrates the main features of geneslator and provides 
+    practical examples of its usage.
+vignette: >
+    %\VignetteEncoding{UTF-8}
+    %\VignetteIndexEntry{Geneslator R package for gene annotation}
+    %\VignetteEngine{knitr::rmarkdown}
+output:
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
+        number_sections: true
+    editor_options: 
+        markdown: 
+            wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", warning = FALSE,
+message = FALSE)
+```
+
+```{r style, echo=FALSE, results='asis'}
+BiocStyle::markdown()
+```
+
+
+# Introduction
+
+Gene identifier conversion and annotation is a common and critical task in
+bioinformatics research. Existing databases and tools use different
+naming conventions for genes or provide only partial annotations, making it 
+challenging to integrate data from multiple sources. **geneslator** addresses 
+this problem by providing a unified interface for genome annotation across 
+different databases in several model organisms.
+
+Key Features:
+
+-   **Multiple database integration**: Integrates data from cross-organism 
+    databases (NCBI, Ensembl, UniProt, Alliance of Genome Resources, GO, KEGG, 
+    Reactome, Wikipathways) and organism-specific resources (HGNC, MGI, RGD, 
+    SGD, WormBase, Flybase, ZFIN, TAIR);
+-   **Archive search**: Supports searching using both current and archived gene 
+    identifiers in NCBI and Ensembl databases;
+-   **Alias resolution**: Supports automatic disambiguation between symbols and 
+    aliases in annotations involving gene symbols;
+-   **Multi-organism support**: Currently supports 8 model organisms
+    (human, mouse, rat, yeast, worm, fly, zebrafish, and arabidopsis).
+
+
+# Installation
+
+```{r installation, eval=FALSE}
+# Install package devtools, if missing
+install.packages("devtools")
+
+# Install the development version of geneslator from GitHub
+devtools::install_github("knowmics-lab/geneslator")
+```
+
+
+# Load the package
+
+```{r load-package}
+library(geneslator)
+```
+
+
+# Import annotation databases
+
+**geneslator** provides species-specific annotation databases for several
+organisms. Type `availableDatabases()` to retrieve the list of currently
+supported species.
+
+```{r available-organisms, eval=TRUE}
+# List organisms annotated in geneslator
+geneslator::availableOrganisms()
+```
+
+Annotation databases are stored as SQLite files in a remote repository at
+https://github.com/knowmics-lab/geneslator/releases. To query a database, you
+first need to import it, by using the `GeneslatorDb` function.
+
+```{r geneslator-db, eval=TRUE}
+# Import geneslator human annotation database 
+human.db <- GeneslatorDb("Human")
+# Call function again. Now cache data will be used
+human.db <- GeneslatorDb("Human")
+# Import geneslator mouse annotation database 
+mouse.db <- GeneslatorDb("Mouse")
+```
+
+When called for the first time on a specific organism, `GeneslatorDb` function 
+downloads the annotation database from the remote repository, stores a local 
+copy into your R cache and finally imports the database. Future calls to 
+`GeneslatorDb` function will simply import the database from your 
+cache, unless a new version of the database is present in the remote repository.
+In the latter case, you will be notified about that and you will be able to 
+choose whether or not updating your local copy in the R cache, before importing
+the database.
+
+
+# Columns and values of annotation databases
+
+Annotation databases are internally represented as collections of R 
+dataframes that can be queried through functions that map a set of values of an 
+input column (the key) of a dataframe to the corresponding values of one or 
+more output columns of the same or a different dataframe.
+
+Function `keytypes()` lists all columns that can be used as keys.
+
+```{r keytypes, eval=TRUE}
+# Get all columns that can be used as keys in mouse annotation db
+geneslator::keytypes(mouse.db)
+```
+
+Similarly, function `columns()` lists all possible output columns. 
+
+```{r columns, eval=TRUE}
+# Get all available types of output values in mouse annotation db
+geneslator::columns(mouse.db)
+```
+
+Note that the output of the two functions is different, because only identifier 
+columns can be used as keys, while any column can be an output column. Type 
+`help("columns","geneslator")` to see the complete list of columns available in 
+the annotation databases of **geneslator**, together with their description.
+
+Function `keys()` is used to retrieve all values of a column in an annotation 
+database.
+
+```{r keys, eval=TRUE}
+# Get the first 10 Entrez IDs in mouse annotation db
+head(geneslator::keys(mouse.db, keytype = "ENTREZID"), 10)
+```
+
+
+# Query the annotation databases
+
+Columns of the annotation databases can be queried using properly re-defined 
+versions of the well-known query functions `select()` and `mapIds()` of 
+**AnnotationDbi** R package.
+
+The `select()` function allows you to query an input key column of the 
+annotation database (`keytype` argument) and retrieve related information 
+across one or more other columns (`columns` argument).
+
+The output of `select()` is a dataframe with all columns specified by `keytype` 
+and `columns` arguments and one row for each mapping found between input and 
+output values.
+
+```{r select-example, eval=TRUE}
+# Map NCBI Gene IDs to gene symbols and Ensembl IDs in Human
+genes <- c("1", "2", "9")
+result <- geneslator::select(human.db, keys = genes,
+            columns = c("SYMBOL", "ENSEMBL"), keytype = "ENTREZID")
+result
+```
+
+Unlike `select()`, `mapIds()` maps an input key column (argument `keytype`) to 
+a single output column (argument `column`).
+
+```{r mapids-example, eval=TRUE}
+# Convert gene symbols to ENTREZ IDs (first match only)
+genes <- c("TP53", "BRCA1", "EGFR")
+entrez_ids <- geneslator::mapIds(human.db, keys = genes, 
+            column = "ENTREZID", keytype = "SYMBOL")
+entrez_ids
+```
+
+By default, the return type is a named vector, where each value is the first 
+mapping found (if any) for a given key, even if multiple output values map to 
+that key. However, this behaviour can be changed through the `multiVals` 
+parameter, which also controls the shape of the output result. For example, 
+`multiVals="list"` produces a list object with all matches found for each input.
+
+```{r mapids-multi, eval=TRUE}
+# Get all possible mappings as a list
+entrez_list <- geneslator::mapIds(human.db, keys = genes,
+            column = "ENTREZID", keytype = "SYMBOL", multiVals = "list")
+entrez_list
+```
+
+
+# Search options
+
+
+## Search using aliases
+
+In `select()` and `mapIds()` functions, by default, queries of annotation 
+databases involving gene symbols are performed by first looking at column 
+"SYMBOL" and, if no mapping is found using "SYMBOL", the query is performed 
+using the "ALIAS" column. This is helpful when users unknowingly start from a 
+list of names that is actually a mix of official gene symbols and aliases.
+
+This behaviour of `select()` and `mapIds()` can be controlled through the 
+boolean parameter `search.aliases`, whose default value is `TRUE`.
+
+In the following example, "BRCAI" is actually an alias of BRCA1 gene, while 
+"PTEN" is the official symbol of the PTEN gene. When mapping these two keys 
+(treated as SYMBOL) to ENTREZID by using `select()`, BRCAI is correctly viewed 
+as an alias of BRCA1 gene and mapped to the NCBI gene id of BRCA1.
+
+```{r aliases, eval=TRUE}
+# Map gene symbols to their NCBI gene ids, querying also the ALIAS column 
+# if needed
+result <- geneslator::select(human.db, keys = c("BRCAI","PTEN"),
+            columns = "ENTREZID", keytype = "SYMBOL")
+result
+```
+
+Whenever ALIAS column is used in place of SYMBOL column (as in this example), 
+a warning message is sent to the user. If we repeat the same query with 
+`search.aliases=FALSE`, `select()` is unable to map BRCAI to the correct 
+NCBI gene id.
+
+```{r no-aliases, eval=TRUE}
+# Map gene symbols to their NCBI gene ids, querying only the SYMBOL column 
+result <- geneslator::select(human.db, keys = c("BRCAI","PTEN"),
+            columns = "ENTREZID", keytype = "SYMBOL", search.aliases = FALSE)
+result
+```
+
+
+## Search using archived identifiers
+
+Gene identifiers and symbols can change over time or become deprecated, as a 
+result of periodic updates of databases such as NCBI or Ensembl. This could be 
+troublesome in annotation tasks, especially when user starts from an old set of 
+identifiers or symbols. To overcome this, annotation databases in 
+**geneslator** contain columns "ENTREZIDOLD" and "ENSEMBLOLD", which collect 
+old gene identifiers of NCBI Gene and Ensembl databases.
+By default, these columns are queried by `select()` and `mapIds()` methods 
+whenever a gene cannot be annotated using current identifiers. This behaviour 
+can be controlled through the boolean parameter `search.archives`, whose 
+default value is `TRUE`.
+
+For example, in the following query key "3" corresponds to the old NCBI Gene 
+identifier of gene "A2MP1". By using archived data, `select()` is able to 
+correctly map NCBI Gene ID "3" to gene symbol "A2MP1".
+
+```{r archives, eval=TRUE}
+# Map NCBI gene id 3 to gene symbol, using both current and old identifiers
+result <- geneslator::select(human.db, keys = "3", columns = "SYMBOL",
+            keytype = "ENTREZID")
+result
+```
+
+Whenever archived identifiers are used to solve a query (as in this example), 
+a warning message is sent to the user. If we set `search.archives=FALSE`, 
+`select()` is unable to map the identifier to the correct symbol.
+
+```{r no-archives, eval=TRUE}
+# Map NCBI gene id 3 to gene symbol, using only current identifiers 
+result <- geneslator::select(human.db, keys = "3", columns = "SYMBOL",
+            keytype = "ENTREZID", search.archives = FALSE)
+result
+```
+
+
+## Orthologs mapping
+
+In queries involving orthologs mapping, by default, `select()` returns all 
+possible ortholog mappings. This behavior is controlled by parameter 
+`orthologs.mapping`, whose default value is "multiple".
+
+```{r orthologs, eval=TRUE}
+# Get orthologs of yeast genes CHC1 and NMA2 in worm and fly 
+result <- geneslator::select(human.db, keys = c("CHC1","SCAMP5"),
+            columns = c("ORTHOWORM", "ORTHOFLY"), keytype = "SYMBOL")
+result
+```
+
+To get only the first ortholog, set `orthologs.mapping="single"`:
+
+```{r orthologs-single, eval=TRUE}
+result <- geneslator::select(human.db, keys = c("CHC1","SCAMP5"),
+            columns = c("ORTHOWORM", "ORTHOFLY"), keytype = "SYMBOL",
+            orthologs.mapping = "single")
+result
+```
+
+For `mapIds()` function, the option `orthologs.mapping` is absent, because the 
+number of mapped orthologs can be directly controlled through parameter 
+`multiVals`.
+
+
+# Session Information
+
+```{r session-info}
+sessionInfo()
+```
+
+
+# References
+
+-   Micale G, Cavallaro G, Privitera GF (2026). geneslator: A
+    Comprehensive Gene Identifier Conversion Tool. R package version
+    0.99.0.
+
+-   Pages H, Carlson M, Falcon S, Li N (2024). AnnotationDbi:
+    Manipulation of SQLite-based annotations in Bioconductor. R package.
+
+-   NCBI Gene: <https://www.ncbi.nlm.nih.gov/gene>
+
+-   Ensembl: <https://www.ensembl.org>
+
+-   UniProt: <https://www.uniprot.org>
+
+-   Gene Ontology: <http://geneontology.org>
+
+-   KEGG: <https://www.kegg.jp>
+
+-   Reactome: <https://reactome.org>
+
+-   WikiPathways: <https://www.wikipathways.org>
+
+-   Alliance of Genome Resources: <https://www.alliancegenome.org>
