@@ -71,10 +71,12 @@ Key Features:
 
 ```{r installation, eval=FALSE}
 # Install package devtools, if missing
-install.packages("devtools")
+if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+}
 
 # Install the development version of geneslator from GitHub
-devtools::install_github("knowmics-lab/geneslator")
+devtools::install_github("knowmics-lab/geneslator", build_vignettes = TRUE)
 ```
 
 
