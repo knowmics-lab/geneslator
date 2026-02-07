@@ -5,7 +5,7 @@ NULL
 #' @keywords internal
 #' @noRd
 .get_remote_db_version <- function(organism) {
-    url <- paste0("https://github.com/GMicale/geneslator/releases/download/",
+    url <- paste0("https://github.com/knowmics-lab/geneslator/releases/download/",
     "GeneslatorDb/",organism,".version")
     return(read.table(url(url))$V1)
 }
