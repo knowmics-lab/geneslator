@@ -81,7 +81,7 @@ check_version = TRUE) {
 .download_annotation_db <- function(organism, dest_path, version_info) {
     #URL of remote repository
     url <- paste0(
-    "https://github.com/GMicale/geneslator/releases/download/GeneslatorDb/",
+    "https://github.com/knowmics-lab/geneslator/releases/download/GeneslatorDb/",
     organism,".sqlite")
     message("========================================")
     message("Download database for ", organism)
