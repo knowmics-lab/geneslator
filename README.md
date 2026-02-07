@@ -28,22 +28,8 @@
 
 ## Installation
 
-### From Bioconductor (when available)
-
 ```r
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("geneslator")
-```
-
-### Development version from GitHub
-
-```r
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("knowmics-lab/geneslator")
+devtools::install_github("knowmics-lab/geneslator", build_vignettes = TRUE)
 ```
 
 ## Usage examples
