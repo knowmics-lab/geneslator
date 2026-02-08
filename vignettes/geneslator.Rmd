@@ -1,5 +1,5 @@
 ---
-title: "Geneslator: An R package for comprehensive gene identifier conversion 
+title: "Geneslator: an R package for comprehensive gene identifier conversion 
 and annotation"
 author:
 - name: Giovanni Micale
