@@ -91,34 +91,43 @@ library(geneslator)
 
 **geneslator** provides species-specific annotation databases for several
 organisms. Type `availableDatabases()` to retrieve the list of currently
-supported species.
+available databases and supported species.
 
 ```{r available-organisms, eval=TRUE}
 # List organisms annotated in geneslator
-geneslator::availableOrganisms()
+geneslator::availableDatabases()
 ```
 
 Annotation databases are stored as SQLite files in a remote repository at
-https://github.com/knowmics-lab/geneslator/releases. To query a database, you
-first need to import it, by using the `GeneslatorDb` function.
+https://github.com/knowmics-lab/geneslator/releases. To query a database for a 
+specific organism `org`, you first need to import it, by using the 
+`GeneslatorDb` function. `org` can be either the scientific name of the 
+organism (e.g. "Homo sapiens") or its Taxonomy ID (e.g. "10090" for Mouse).
 
 ```{r geneslator-db, eval=TRUE}
-# Import geneslator human annotation database 
-human.db <- GeneslatorDb("Human")
-# Call function again. Now cache data will be used
-human.db <- GeneslatorDb("Human")
-# Import geneslator mouse annotation database 
-mouse.db <- GeneslatorDb("Mouse")
+# Import human annotation db (after downloading it from remote repository)
+GeneslatorDb("Homo sapiens")
+# Info about the imported human annotation database object
+org.Hsapiens.db
+# Import mouse annotation database using its Taxonomy ID
+GeneslatorDb("10090")
+# Info about the imported human annotation database object
+org.Mmusculus.db
 ```
 
 When called for the first time on a specific organism, `GeneslatorDb` function 
 downloads the annotation database from the remote repository, stores a local 
-copy into your R cache and finally imports the database. Future calls to 
-`GeneslatorDb` function will simply import the database from your 
-cache, unless a new version of the database is present in the remote repository.
+copy into your R cache folder and finally imports the database. Future calls 
+to `GeneslatorDb` function will simply import the database from your cache, 
+unless a new version of the database is present in the remote repository.
 In the latter case, you will be notified about that and you will be able to 
 choose whether or not updating your local copy in the R cache, before importing
 the database.
+
+```{r geneslator-db-cache, eval=TRUE}
+# Import human db again. Now cache data will be used to import db
+GeneslatorDb("Homo sapiens")
+```
 
 
 # Columns and values of annotation databases
@@ -132,14 +141,14 @@ Function `keytypes()` lists all columns that can be used as keys.
 
 ```{r keytypes, eval=TRUE}
 # Get all columns that can be used as keys in mouse annotation db
-geneslator::keytypes(mouse.db)
+geneslator::keytypes(org.Mmusculus.db)
 ```
 
 Similarly, function `columns()` lists all possible output columns. 
 
 ```{r columns, eval=TRUE}
 # Get all available types of output values in mouse annotation db
-geneslator::columns(mouse.db)
+geneslator::columns(org.Mmusculus.db)
 ```
 
 Note that the output of the two functions is different, because only identifier 
@@ -152,7 +161,7 @@ database.
 
 ```{r keys, eval=TRUE}
 # Get the first 10 Entrez IDs in mouse annotation db
-head(geneslator::keys(mouse.db, keytype = "ENTREZID"), 10)
+head(geneslator::keys(org.Mmusculus.db, keytype = "ENTREZID"), 10)
 ```
 
 
@@ -173,7 +182,7 @@ output values.
 ```{r select-example, eval=TRUE}
 # Map NCBI Gene IDs to gene symbols and Ensembl IDs in Human
 genes <- c("1", "2", "9")
-result <- geneslator::select(human.db, keys = genes,
+result <- geneslator::select(org.Hsapiens.db, keys = genes,
             columns = c("SYMBOL", "ENSEMBL"), keytype = "ENTREZID")
 result
 ```
@@ -184,7 +193,7 @@ a single output column (argument `column`).
 ```{r mapids-example, eval=TRUE}
 # Convert gene symbols to ENTREZ IDs (first match only)
 genes <- c("TP53", "BRCA1", "EGFR")
-entrez_ids <- geneslator::mapIds(human.db, keys = genes, 
+entrez_ids <- geneslator::mapIds(org.Hsapiens.db, keys = genes, 
             column = "ENTREZID", keytype = "SYMBOL")
 entrez_ids
 ```
@@ -197,7 +206,7 @@ parameter, which also controls the shape of the output result. For example,
 
 ```{r mapids-multi, eval=TRUE}
 # Get all possible mappings as a list
-entrez_list <- geneslator::mapIds(human.db, keys = genes,
+entrez_list <- geneslator::mapIds(org.Hsapiens.db, keys = genes,
             column = "ENTREZID", keytype = "SYMBOL", multiVals = "list")
 entrez_list
 ```
@@ -225,7 +234,7 @@ as an alias of BRCA1 gene and mapped to the NCBI gene id of BRCA1.
 ```{r aliases, eval=TRUE}
 # Map gene symbols to their NCBI gene ids, querying also the ALIAS column 
 # if needed
-result <- geneslator::select(human.db, keys = c("BRCAI","PTEN"),
+result <- geneslator::select(org.Hsapiens.db, keys = c("BRCAI","PTEN"),
             columns = "ENTREZID", keytype = "SYMBOL")
 result
 ```
@@ -237,7 +246,7 @@ NCBI gene id.
 
 ```{r no-aliases, eval=TRUE}
 # Map gene symbols to their NCBI gene ids, querying only the SYMBOL column 
-result <- geneslator::select(human.db, keys = c("BRCAI","PTEN"),
+result <- geneslator::select(org.Hsapiens.db, keys = c("BRCAI","PTEN"),
             columns = "ENTREZID", keytype = "SYMBOL", search.aliases = FALSE)
 result
 ```
@@ -262,7 +271,7 @@ correctly map NCBI Gene ID "3" to gene symbol "A2MP1".
 
 ```{r archives, eval=TRUE}
 # Map NCBI gene id 3 to gene symbol, using both current and old identifiers
-result <- geneslator::select(human.db, keys = "3", columns = "SYMBOL",
+result <- geneslator::select(org.Hsapiens.db, keys = "3", columns = "SYMBOL",
             keytype = "ENTREZID")
 result
 ```
@@ -273,7 +282,7 @@ a warning message is sent to the user. If we set `search.archives=FALSE`,
 
 ```{r no-archives, eval=TRUE}
 # Map NCBI gene id 3 to gene symbol, using only current identifiers 
-result <- geneslator::select(human.db, keys = "3", columns = "SYMBOL",
+result <- geneslator::select(org.Hsapiens.db, keys = "3", columns = "SYMBOL",
             keytype = "ENTREZID", search.archives = FALSE)
 result
 ```
@@ -287,7 +296,7 @@ possible ortholog mappings. This behavior is controlled by parameter
 
 ```{r orthologs, eval=TRUE}
 # Get orthologs of yeast genes CHC1 and NMA2 in worm and fly 
-result <- geneslator::select(human.db, keys = c("CHC1","SCAMP5"),
+result <- geneslator::select(org.Hsapiens.db, keys = c("CHC1","SCAMP5"),
             columns = c("ORTHOWORM", "ORTHOFLY"), keytype = "SYMBOL")
 result
 ```
@@ -295,7 +304,7 @@ result
 To get only the first ortholog, set `orthologs.mapping="single"`:
 
 ```{r orthologs-single, eval=TRUE}
-result <- geneslator::select(human.db, keys = c("CHC1","SCAMP5"),
+result <- geneslator::select(org.Hsapiens.db, keys = c("CHC1","SCAMP5"),
             columns = c("ORTHOWORM", "ORTHOFLY"), keytype = "SYMBOL",
             orthologs.mapping = "single")
 result

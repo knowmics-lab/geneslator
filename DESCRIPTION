@@ -11,7 +11,7 @@ License: Artistic-2.0
 Encoding: UTF-8
 URL: https://github.com/knowmics-lab/geneslator
 Depends: R (>= 4.4.0)
-Imports: AnnotationDbi, methods, IRanges, utils
+Imports: AnnotationDbi, methods, IRanges, utils, jsonlite, DBI
 Suggests: testthat, knitr, rmarkdown, BiocStyle
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr

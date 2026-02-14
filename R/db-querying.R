@@ -1,6 +1,43 @@
 # ========================================
-# File: R/data-mapping.R
+# File: R/db-querying.R
 # ========================================
+
+#' @title Available databases in geneslator
+#'
+#' @description
+#' `availableDatabases` lists all possible annotation databases that can be 
+#' queried in the \pkg{geneslator} package. Databases are available as a 
+#' GitHub Release at https://github.com/knowmics-lab/geneslator/releases. 
+#' Each database refer to a specific organism. 
+#'
+#' @return `availableDatabases` returns a dataframe which reports, for each
+#' annotation database: database name, scientific name and Taxonomy ID of the 
+#' organism it refers to and number, release date and MD5 security check of 
+#' the most recent version available in the GitHub Release. 
+#'
+#' @seealso \code{\link{GeneslatorDb}}
+#'
+#' @examples
+#' # Get the list of all databases included in geneslator
+#' availableDatabases()
+#' @export
+availableDatabases <- function() {
+    url <- paste0("https://github.com/knowmics-lab/",
+    "geneslator/releases/download/GeneslatorDb/databases.json")
+    temp.file <- tempfile(fileext = paste0(".json"))
+    tryCatch({
+        #Download database info file
+        utils::download.file(url = url, destfile = temp.file, quiet = TRUE)
+    }, error = function(e) {
+        msg <- paste0("Failed to retrieve list of annotation databases from ",
+        url,"\nCheck internet connection")
+        stop(msg) 
+    })
+    list.db <- jsonlite::fromJSON(temp.file)
+    #Clean temp file
+    invisible(file.remove(temp.file))
+    return(list.db)
+}
 
 #' @title GeneslatorDb class
 #' 
@@ -13,46 +50,65 @@
 #' in the `geneslator` package. It wraps an `OrgDb` object, which represents 
 #' the annotation database of a specific organism. 
 #' 
-#' The constructor method [GeneslatorDb()] creates a new `GeneslatorDb` object 
-#' for an organism, starting from an SQLite annotation file. SQLite files used 
-#' by \pkg{geneslator} are stored in a remote repository at 
-#' https://github.com/knowmics-lab/geneslator/releases. When called, the 
-#' constructor method first look for a copy of the SQLite file in the R cache 
-#' folder of the user. If the SQLite file exists and is updated, the latter is 
-#' used to create the `GeneslatorDb` object. If an old version of the SQLite 
-#' file exists, upon request by the user, the new version is copied in the R 
-#' cache before creating the object. If the SQLite file does not exist, the 
-#' latter is automatically copied in the R cache, before creating the object.
+#' The constructor method `GeneslatorDb(org)` creates a new `GeneslatorDb` 
+#' object for the annotation database of organism `org`. Once created, the 
+#' object is exported to the global environment of the user as a variable 
+#' having the same name of the annotation database (e.g. `org.Hsapiens.db` for 
+#' Human, `org.Mmusculus.db` for Mouse). See [availableDatabases()] for the 
+#' list of available databases.  
+#' 
+#' Annotation databases used by \pkg{geneslator} are stored as SQLite files in 
+#' a remote repository at https://github.com/knowmics-lab/geneslator/releases. 
+#' When called, the constructor method first look for a copy of the SQLite 
+#' file in the R cache folder of the user. If the SQLite file exists and is 
+#' updated, the latter is used to create the `GeneslatorDb` object. If an old 
+#' version of the SQLite file exists, upon request by the user, the new 
+#' version is copied in the R cache before creating the object. If the SQLite 
+#' file does not exist, the latter is automatically copied in the 
+#' \pkg{geneslator} package cache, before creating the object.
 #' 
 #' @slot db The annotation database represented as an `OrgDb` object.
 #' 
-#' @param organism A character string specifying the organism. 
-#' See [availableOrganisms()] for the list of supported organisms.
-#' @param check_version Logical. If `TRUE` (default), checks if the local 
-#' database version in the user package is up to date.
+#' @param org A character string specifying the scientific name of the 
+#' organism (e.g. "Homo sapiens") or its Taxonomy ID. 
+#' See [availableDatabases()] for the list of supported organisms.
 #' 
 #' @returns A `GeneslatorDb` object.
 #' 
 #' @examples
 #' # Create a GeneslatorDb object for Human
-#' human.db <- GeneslatorDb("Human")
+#' # First call: download human db (org.Hsapiens.db), then load it from cache 
+#' GeneslatorDb("Homo sapiens")
+#' org.Hsapiens.db
+#' 
+#' # Create a GeneslatorDb object for Human
+#' # Second call: load db from local cache
+#' GeneslatorDb("Homo sapiens")
+#' org.Hsapiens.db
+#' 
+#' # Create a GeneslatorDb object for Fly (use taxonomy id)
+#' GeneslatorDb("7227")
+#' org.Dmelanogaster.db
 #' 
 #' @importFrom AnnotationDbi loadDb
 #' @export
-GeneslatorDb <- function(organism, check_version = TRUE) {
-    #Check if organism is present or not
-    list.organisms <- availableOrganisms()
-    if (!organism %in% list.organisms) {
-        stop("Unsupported organism: ", organism, call. = FALSE)
+GeneslatorDb <- function(org) {
+    #Check if annotation database for this organism is available
+    list.databases <- availableDatabases()
+    if(org %in% list.databases$Organism){
+        db.name <- list.databases[list.databases$Organism==org,"Name"]
+    } else if(org %in% list.databases$TaxID){
+        db.name <- list.databases[list.databases$TaxID==org,"Name"]
+    } else {
+        stop("Organism '", org, "' not supported.\n",
+        "See availableDatabases() to view the complete list.", call. = FALSE)
     }
+    db.version <- list.databases[list.databases$Name==db.name,"Version"]
+    db.md5 <- list.databases[list.databases$Name==db.name,"MD5"]
     #Get database local path (after downloading it if necessary)
-    db_path <- .get_annotation_db(organism, check_version = check_version)
-    #Load as OrgDb object
-    #orgdb <- loadDb(file = db_path)
-    orgdb <- suppressPackageStartupMessages(
-    AnnotationDbi::loadDb(file = db_path))
+    org.db <- .loadAnnotationDb(db.name, db.version, db.md5)
     #Create object GeneslatorDb
-    methods::new("GeneslatorDb", db = orgdb)
+    assign(db.name, methods::new("GeneslatorDb",db=org.db), envir = .GlobalEnv)
 }
 
 
@@ -101,32 +157,33 @@ setClass("GeneslatorDb", slots = list(db = "OrgDb"))
 #' `keytype` and `columns` parameters and one row for each mapping 
 #' found between keys and column values.
 #' 
-#' @seealso \code{\link{availableOrganisms}}, \code{\link{keytypes}},
+#' @seealso \code{\link{availableDatabases}}, \code{\link{keytypes}},
 #' \code{\link{columns}}
 #' 
 #' @examples
 #' #Lookup NCBI gene ids for a given list of gene symbols in fly
-#' fly.db <- GeneslatorDb("Fly")
-#' geneslator::select(fly.db, keys=c("CG14883","GstE2"), columns="ENTREZID", 
-#' keytype="SYMBOL")
+#' GeneslatorDb("Drosophila melanogaster")
+#' geneslator::select(org.Dmelanogaster.db, keys=c("CG14883","GstE2"), 
+#' columns="ENTREZID", keytype="SYMBOL")
 #' 
 #' # Lookup KEGG pathway ids and their relative full names for a given list 
 #' # of ensembl gene ids in worm
-#' worm.db <- GeneslatorDb("Worm")
-#' geneslator::select(worm.db, keys=c("ENSDARG00000013522",
+#' GeneslatorDb("Caenorhabditis elegans")
+#' geneslator::select(org.Celegans.db, keys=c("ENSDARG00000013522",
 #' "ENSDARG00000103044"), columns=c("KEGGPATH","KEGGPATHNAME"), 
 #' keytype="ENSEMBL")
 #' 
 #' # Lookup mouse orthologs for a list of human gene symbols. 
 #' # Ignore aliases and return only the first ortholog found for each gene
-#' human.db <- GeneslatorDb("Human")
-#' geneslator::select(human.db, keys=c("BRCA1","PTEN"), columns="ORTHOMOUSE", 
-#' keytype="SYMBOL", search.aliases = FALSE, orthologs.mapping = "single")
+#' GeneslatorDb("Homo sapiens")
+#' geneslator::select(org.Hsapiens.db, keys=c("BRCA1","PTEN"), 
+#' columns="ORTHOMOUSE", keytype="SYMBOL", search.aliases = FALSE, 
+#' orthologs.mapping = "single")
 #' 
 #' # Lookup gene ontologies for a list of entrez ids in arabidopsis. 
 #' # Do not use NCBI archive data
-#' arabidopsis.db <- GeneslatorDb("Arabidopsis")
-#' geneslator::select(arabidopsis.db, keys=c("820005","831939"), 
+#' GeneslatorDb("Arabidopsis thaliana")
+#' geneslator::select(org.Athaliana.db, keys=c("820005","831939"), 
 #' columns=c("GO","GONAME","GOTYPE"), keytype="ENTREZID", 
 #' search.archives = FALSE)
 #' 
@@ -241,33 +298,34 @@ search.archives=TRUE, orthologs.mapping="multiple", ...) {
 #' of the list is the vector of all mappings found for a given key. The type of 
 #' the return object depends on the value of the `multiVals` parameter.
 #' 
-#' @seealso \code{\link{availableOrganisms}}, \code{\link{keytypes}},
+#' @seealso \code{\link{availableDatabases}}, \code{\link{keytypes}},
 #' \code{\link{columns}}
 #' 
 #' @examples
 #' # Map NCBI gene ids to gene aliases in yeast. 
 #' # Return a named vector with 1st mapping found
-#' yeast.db <- GeneslatorDb("Yeast")
-#' geneslator::mapIds(yeast.db, keys=c("856781","1466469"), column="ALIAS", 
-#' keytype="ENTREZID")
+#' GeneslatorDb("Saccharomyces cerevisiae")
+#' geneslator::mapIds(org.Scerevisiae.db, keys=c("856781","1466469"), 
+#' column="ALIAS", keytype="ENTREZID")
 #' 
 #' # Map gene symbols to gene ontologies in mouse. 
 #' # Return a list with all possible mappings
-#' mouse.db <- GeneslatorDb("Mouse")
-#' geneslator::mapIds(mouse.db, keys=c("Grin2a","Rev3l"), column="GO", 
+#' GeneslatorDb("Mus musculus")
+#' geneslator::mapIds(org.Mmusculus.db, keys=c("Grin2a","Rev3l"), column="GO", 
 #' keytype="SYMBOL", multiVals="list")
 #' 
 #' # Map gene symbols to uniprot ids in rat. Apply a custom function to 
 #' # return the last mapping found and do not use Ensembl archive data.
-#' rat.db <- GeneslatorDb("Rat")
+#' GeneslatorDb("Rattus norvegicus")
 #' last <- function(x){x[[length(x)]]}
-#' geneslator::mapIds(rat.db, keys=c("ENSRNOG00000003105","ENSRNOG00000049505"),
-#' column="UNIPROT", keytype="ENSEMBL", multiVals="list", search.archives=FALSE)
+#' geneslator::mapIds(org.Rnorvegicus.db, keys=c("ENSRNOG00000003105",
+#' "ENSRNOG00000049505"), column="UNIPROT", keytype="ENSEMBL", 
+#' multiVals="list", search.archives=FALSE)
 #' 
 #' # Map gene symbols to reactome pathways in zebrafish.
 #' # Return a CharacterList object with all possible mappings
-#' zebrafish.db <- GeneslatorDb("Zebrafish")
-#' geneslator::mapIds(zebrafish.db, keys=c("hoxc8a","samhd1"), 
+#' GeneslatorDb("Danio rerio")
+#' geneslator::mapIds(org.Drerio.db, keys=c("hoxc8a","samhd1"), 
 #' column="REACTOMEPATH", keytype="SYMBOL", multiVals="CharacterList")
 #' 
 #' @importFrom IRanges CharacterList
@@ -381,17 +439,17 @@ function(x, keys, column, keytype, search.aliases=TRUE, search.archives=TRUE,
 #' @return `keytypes()` and `columns()` return a character vector of column 
 #' names of database `x`.
 #'
-#' @seealso \code{\link{availableOrganisms}}, \code{\link{mapIds}},
+#' @seealso \code{\link{availableDatabases}}, \code{\link{mapIds}},
 #' \code{\link{select}}
 #'
 #' @examples
 #' # Get the list of available keytypes in mouse
-#' mouse.db <- GeneslatorDb("Mouse")
-#' geneslator::keytypes(mouse.db)
+#' GeneslatorDb("Mus musculus")
+#' geneslator::keytypes(org.Mmusculus.db)
 #'
 #' # Get the list of available columns that can be mapped to keys in yeast
-#' yeast.db <- GeneslatorDb("Yeast")
-#' geneslator::columns(yeast.db)
+#' GeneslatorDb("Saccharomyces cerevisiae")
+#' geneslator::columns(org.Scerevisiae.db)
 #' 
 #' @importMethodsFrom AnnotationDbi keytypes
 #' @export
@@ -443,12 +501,12 @@ setMethod("columns", signature(x = "GeneslatorDb"), function(x) {
 #'
 #' @examples
 #' # Get the list of all NCBI gene ids present in zebrafish annotation db
-#' zebrafish.db <- GeneslatorDb("Zebrafish")
-#' geneslator::keys(zebrafish.db, keytype = "ENTREZID")
+#' GeneslatorDb("Danio rerio")
+#' geneslator::keys(org.Drerio.db, keytype = "ENTREZID")
 #'
 #' # Get the list of all KEGG pathways present in rat annotation db
-#' rat.db <- GeneslatorDb("Rat")
-#' geneslator::keys(rat.db, keytype = "KEGGPATH")
+#' GeneslatorDb("Rattus norvegicus")
+#' geneslator::keys(org.Rnorvegicus.db, keytype = "KEGGPATH")
 #' 
 #' @importMethodsFrom AnnotationDbi keys
 #' @export
