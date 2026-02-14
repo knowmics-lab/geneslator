@@ -41,35 +41,35 @@ devtools::install_github("knowmics-lab/geneslator", build_vignettes = TRUE)
 library(geneslator)
 
 # Check available organisms
-availableOrganisms()
+availableDatabases()
 
-# Import human annotation database (download database automatically if needed)
-human.db <- GeneslatorDb("Human")
+# Import human annotation database "org.Hsapiens.db" (download database automatically if needed)
+GeneslatorDb("Homo sapiens")
 
 # List all columns present in human annotation database 
-columns(human.db)
+columns(org.Hsapiens.db)
 
 # List all identifier columns present in human annotation database 
-keytypes(gdb)
+keytypes(org.Hsapiens.db)
 
 # Get gene symbols, full names and NCBI Gene IDs from Ensembl IDs using select()
-select(human.db, keys = c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618"),
+select(org.Hsapiens.db, keys = c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618"),
        columns = c("SYMBOL", "GENENAME", "ENTREZID"), keytype = "ENSEMBL")
 
 # Convert Ensembl IDs to gene symbols using mapIds()
-mapIds(gdb, keys = c("ENSG00000139618", "ENSG00000141510"), column = "SYMBOL",
+mapIds(org.Hsapiens.db, keys = c("ENSG00000139618", "ENSG00000141510"), column = "SYMBOL",
        keytype = "ENSEMBL")
 
 # Get mouse orthologs for human genes
-select(human.db, keys = c("TP53", "BRCA1", "EGFR"), columns = c("ORTHOMOUSE"),
+select(org.Hsapiens.db, keys = c("TP53", "BRCA1", "EGFR"), columns = c("ORTHOMOUSE"),
        keytype = "SYMBOL")
 
 # Get GO annotations for a set of genes
-select(human.db, keys = c("7157", "672"), columns = c("SYMBOL", "GO", "GONAME"),
+select(org.Hsapiens.db, keys = c("7157", "672"), columns = c("SYMBOL", "GO", "GONAME"),
        keytype = "ENTREZID")
 
 # Get KEGG pathways for a set of genes
-select(human.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGGPATHNAME"),
+select(org.Hsapiens.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGGPATHNAME"),
        keytype = "SYMBOL")
 ```
 
@@ -85,10 +85,10 @@ When you import an annotation database in geneslator:
 
 ```r
 # Import human database for the first time: the database is downloaded and saved in cache
-gdb <- GeneslatorDb("Human")
+gdb <- GeneslatorDb("Homo sapiens")
 
 # Import human database again: use file saved in local cache
-gdb <- GeneslatorDb("Human")
+gdb <- GeneslatorDb("Homo sapiens")
 ```
 
 ## Documentation
