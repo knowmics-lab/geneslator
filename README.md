@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-Artistic--2.0-blue.svg)](https://opensource.org/licenses/Artistic-2.0)
 <!-- badges: end -->
 
-**geneslator** is a comprehensive R package for gene identifier conversion and genome annotation across multiple model organisms. The package integrates data from several cross-organism databases and organism-specific resources within a single, coherent framework.
+**geneslator** is a comprehensive R package for gene identifier conversion and genome annotation across multiple model organisms. The package integrates data from several cross-organism databases and organism-specific resources within a single, coherent framework. Databases are updated each month and all monthly releases are available at [<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator-data/releases>)
 
 ## Key Features
 
@@ -40,10 +40,10 @@ devtools::install_github("knowmics-lab/geneslator", build_vignettes = TRUE)
 ```r
 library(geneslator)
 
-# Check available organisms
+# Check available databases in the latest release
 availableDatabases()
 
-# Import human annotation database "org.Hsapiens.db" (download database automatically if needed)
+# Import human annotation database "org.Hsapiens.db" (download database automatically if needed) from the latest release
 GeneslatorDb("Homo sapiens")
 
 # List all columns present in human annotation database 
@@ -75,7 +75,7 @@ select(org.Hsapiens.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGG
 
 ## Database Management
 
-Annotation databases are automatically downloaded from [<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator/releases>) 
+Annotation databases are automatically downloaded from [<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator-data/releases>) 
 when needed and cached locally.
 
 When you import an annotation database in geneslator:
@@ -89,6 +89,23 @@ gdb <- GeneslatorDb("Homo sapiens")
 
 # Import human database again: use file saved in local cache
 gdb <- GeneslatorDb("Homo sapiens")
+```
+
+## Versioning Management
+
+[<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator-data/releases>) contains all monthly database releases. 
+Past releases of annotation databases can be imported and queried in the same way as latest releases. 
+
+```r
+# Check available database versions
+availableVersions()
+
+# Import human annotation database "org.Hsapiens.db" (download database automatically if needed) from release 2025.12
+GeneslatorDb("Homo sapiens", release.version = "2025.12")
+
+# Get gene symbols, full names and NCBI Gene IDs from Ensembl IDs using select()
+select(org.Hsapiens.db, keys = c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618"),
+       columns = c("SYMBOL", "GENENAME", "ENTREZID"), keytype = "ENSEMBL")
 ```
 
 ## Documentation
