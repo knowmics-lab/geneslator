@@ -11,16 +11,14 @@ NULL
 #' @keywords internal
 #' @noRd
 .loadAnnotationDb <- function(db.name, remote.version, remote.md5, is.latest) {
-    #Check if annotation db is present in local package cache
     cache.dir <- tools::R_user_dir("geneslator", which = "cache")
     db.file <- ifelse(is.latest,list.files(cache.dir,pattern=paste0(db.name,
     ".*_latest"),full.names = TRUE),list.files(cache.dir,pattern = paste0(
     db.name,"_",remote.version,".sqlite"),full.names = TRUE))
     if(!is.na(db.file)){
         if(is.latest){
-            #Requested latest version. Check if local latest version is updated
             local.version <- strsplit(db.file,".db_|_latest")[[1]][2]
-            if (local.version!=remote.version) {
+            if (curl::has_internet() && local.version!=remote.version) {
                 message("Available update for ",db.name," database")
                 message("Local version: ", local.version)
                 message("Available version: ", remote.version)
@@ -42,20 +40,23 @@ NULL
                 message("Loaded database found in cache: ", db.file)
             }
         } else {
-            if(exists(db.name)){
-                DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
-            }
+            if(exists(db.name)) DBI::dbDisconnect(
+            AnnotationDbi::dbconn(get(db.name)@db))
             message("Loaded database found in cache: ", db.file)
         }
     } else {
         message("Database not found in cache")
+        if(!curl::has_internet()){
+            msg <- paste0("Failed to download database ",db.name," from ",
+            "remote repository.\nNo internet connection")
+            stop(msg)
+        }
         .downloadAnnotationDb(db.name,cache.dir,remote.version,remote.md5,
         is.latest,is.update=FALSE)
     }
-    #Load annotation database as OrgDb object
-    db.file <- ifelse(is.latest,paste0(cache.dir,"/",db.name,"_",remote.version,
-    "_latest.sqlite"),paste0(cache.dir,"/",db.name,"_",remote.version,
-    ".sqlite"))
+    db.file <- ifelse(is.latest,list.files(cache.dir,pattern=paste0(db.name,
+    ".*_latest"),full.names = TRUE),list.files(cache.dir,pattern = paste0(
+    db.name,"_",remote.version,".sqlite"),full.names = TRUE))
     org.db <- suppressPackageStartupMessages(AnnotationDbi::loadDb(db.file))
     return(org.db)
 }
@@ -110,4 +111,17 @@ remote.md5, is.latest, is.update) {
         %s\nDetails: %s", db.name, url, e$message)
         stop(msg, call. = FALSE) 
     })
+}
+
+#' Map Taxonomy ID to organism
+#' @keywords internal
+#' @noRd
+.getOrgFromTaxid <- function(taxid)
+{
+    org.list <- c("Homo sapiens","Mus musculus","Rattus norvegicus",
+    "Danio rerio","Drosophila melanogaster","Caenorhabditis elegans",
+    "Saccharomyces cerevisiae","Arabidopsis thaliana")
+    names(org.list) <- c("9606","10090","10116","7955","7227","6239","559292",
+    "3702")
+    return(org.list[as.character(taxid)])
 }

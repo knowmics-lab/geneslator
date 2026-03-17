@@ -73,7 +73,8 @@ availableDatabases <- function(release.version = "latest") {
     if(!curl::has_internet()){
         msg <- paste0("Failed to retrieve list of available annotation ",
         "databases.\nNo internet connection")
-        stop(msg)
+        message(msg)
+        return(NULL)
     }
     tryCatch({
         if(release.version=="latest"){
@@ -179,17 +180,28 @@ GeneslatorDb <- function(org, release.version="latest") {
     #Check if annotation database for the required organism and release version
     #is available
     list.databases <- availableDatabases(release.version)
-    db.version <- unique(list.databases$Version)
-    if(org %in% list.databases$Organism){
-        db.name <- list.databases[list.databases$Organism==org,"Name"]
-    } else if(org %in% list.databases$TaxID){
-        db.name <- list.databases[list.databases$TaxID==org,"Name"]
+    if(is.null(list.databases)){
+        db.version <- release.version
+        if(grepl("[0-9]+",org)){
+            org.info <- strsplit(.getOrgFromTaxid(org)," ")[[1]]
+        } else {
+            org.info <- strsplit(org," ")[[1]]
+        }
+        db.name <- paste0("org.",substr(org.info[1],1,1),org.info[2],".db")
+        db.md5 <- NULL
     } else {
-        stop("Organism '", org, "' not supported.\n",
-        "See availableDatabases('",release.version,"') to view the complete ",
-        "list.", call. = FALSE)
+        db.version <- unique(list.databases$Version)
+        if(org %in% list.databases$Organism){
+            db.name <- list.databases[list.databases$Organism==org,"Name"]
+        } else if(org %in% list.databases$TaxID){
+            db.name <- list.databases[list.databases$TaxID==org,"Name"]
+        } else {
+            stop("Organism '", org, "' not supported.\n",
+            "See availableDatabases('",release.version,"') to view the ",
+            "complete list.", call. = FALSE)
+        }
+        db.md5 <- list.databases[list.databases$Name==db.name,"MD5"]
     }
-    db.md5 <- list.databases[list.databases$Name==db.name,"MD5"]
     is.latest <- FALSE
     if(release.version=="latest"){
         is.latest <- TRUE
