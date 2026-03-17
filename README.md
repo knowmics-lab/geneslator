@@ -75,7 +75,7 @@ select(org.Hsapiens.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGG
 
 ## Database Management
 
-Annotation databases are automatically downloaded from [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>).
+Annotation databases are automatically downloaded from [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>)
 when needed and cached locally.
 
 When you import an annotation database in geneslator:
@@ -92,8 +92,7 @@ gdb <- GeneslatorDb("Homo sapiens")
 ```
 
 ## Versioning Management
-
-[<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator-data/releases>) contains all monthly database releases. 
+ 
 Past releases of annotation databases can be imported and queried in the same way as latest releases. 
 
 ```r
