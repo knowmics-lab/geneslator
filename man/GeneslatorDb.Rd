@@ -6,12 +6,16 @@
 \alias{GeneslatorDb-class}
 \title{GeneslatorDb class}
 \usage{
-GeneslatorDb(org)
+GeneslatorDb(org, release.version = "latest")
 }
 \arguments{
 \item{org}{A character string specifying the scientific name of the
 organism (e.g. "Homo sapiens") or its Taxonomy ID.
 See \code{\link[=availableDatabases]{availableDatabases()}} for the list of supported organisms.}
+
+\item{release.version}{A character string indicating the release version of
+the annotation database (e.g. "2025-12"). See \code{\link[=availableVersions]{availableVersions()}} for the
+list of available releases.}
 }
 \value{
 A \code{GeneslatorDb} object.
@@ -25,22 +29,30 @@ The \code{GeneslatorDb} class is the container for storing annotation databases
 in the \code{geneslator} package. It wraps an \code{OrgDb} object, which represents
 the annotation database of a specific organism.
 
+Annotation databases used by \pkg{geneslator} are updated on a monthly basis
+and available as GitHub Releases at
+\url{https://github.com/knowmics-lab/geneslator-data/releases} as SQLite
+files. Each release refers to a specific version of the databases. Versions
+are indicated as \code{year.month}, where \code{year} and \code{month} denote the year and
+the month of the publication of the release (e.g. '2026.03'). Each database
+in a release refers to a specific organism.
+
 The constructor method \code{GeneslatorDb(org)} creates a new \code{GeneslatorDb}
 object for the annotation database of organism \code{org}. Once created, the
 object is exported to the global environment of the user as a variable
 having the same name of the annotation database (e.g. \code{org.Hsapiens.db} for
-Human, \code{org.Mmusculus.db} for Mouse). See \code{\link[=availableDatabases]{availableDatabases()}} for the
-list of available databases.
+Human, \code{org.Mmusculus.db} for Mouse). By default, the constructor method
+considers the latest release of the database. An older version can be
+specified through parameter \code{release.version}. See \code{\link[=availableDatabases]{availableDatabases()}}
+and \code{\link[=availableVersions]{availableVersions()}} for the list of available databases and release
+versions.
 
-Annotation databases used by \pkg{geneslator} are stored as SQLite files in
-a remote repository at https://github.com/knowmics-lab/geneslator/releases.
 When called, the constructor method first look for a copy of the SQLite
 file in the R cache folder of the user. If the SQLite file exists and is
-updated, the latter is used to create the \code{GeneslatorDb} object. If an old
-version of the SQLite file exists, upon request by the user, the new
-version is copied in the R cache before creating the object. If the SQLite
-file does not exist, the latter is automatically copied in the
-\pkg{geneslator} package cache, before creating the object.
+up-to-date, the cached copy is used to create the \code{GeneslatorDb} object.
+Otherwise, upon request by the user, the database is dowloaded from the
+remote release and copied in the \pkg{geneslator} package cache, before
+creating the object.
 }
 \section{Slots}{
 
@@ -50,17 +62,17 @@ file does not exist, the latter is automatically copied in the
 
 \examples{
 # Create a GeneslatorDb object for Human
-# First call: download human db (org.Hsapiens.db), then load it from cache 
+# First call: download human db (org.Hsapiens.db) from latest release and 
+# save it to R cache 
 GeneslatorDb("Homo sapiens")
 org.Hsapiens.db
-
-# Create a GeneslatorDb object for Human
 # Second call: load db from local cache
 GeneslatorDb("Homo sapiens")
 org.Hsapiens.db
 
-# Create a GeneslatorDb object for Fly (use taxonomy id)
-GeneslatorDb("7227")
+# Create a GeneslatorDb object for Fly. 
+# Use taxonomy id and release version 2025.12
+GeneslatorDb("7227","2025.12")
 org.Dmelanogaster.db
 
 }

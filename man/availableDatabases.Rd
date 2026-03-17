@@ -4,24 +4,40 @@
 \alias{availableDatabases}
 \title{Available databases in geneslator}
 \usage{
-availableDatabases()
+availableDatabases(release.version = "latest")
+}
+\arguments{
+\item{release.version}{Release version of the databases. By default, the
+most recent version is considered ("latest"). Older versions must be
+indicated as \code{year.month}, where \code{year} and \code{month} denote the year and the
+month of the publication of the release (e.g. "2026.03"). See
+\code{\link[=availableVersions]{availableVersions()}} for the list of available release versions.}
 }
 \value{
 \code{availableDatabases} returns a dataframe which reports, for each
-annotation database: database name, scientific name and Taxonomy ID of the
-organism it refers to and number, release date and MD5 security check of
-the most recent version available in the GitHub Release.
+annotation database: database name, scientific name of the organism,
+Taxonomy ID of the organism, MD5 security check of the SQLite database
+file and release version. Database info refer to the release version
+specified by the \code{version} parameter.
 }
 \description{
 \code{availableDatabases} lists all possible annotation databases that can be
-queried in the \pkg{geneslator} package. Databases are available as a
-GitHub Release at https://github.com/knowmics-lab/geneslator/releases.
-Each database refer to a specific organism.
+queried in the \pkg{geneslator} package. Databases are updated
+on a monthly basis and available as GitHub Releases at
+\url{https://github.com/knowmics-lab/geneslator-data/releases}.
+Each release refer to a specific version of the databases. Versions are
+indicated as \code{year.month}, where \code{year} and \code{month} denote the year and the
+month of the publication of the release (e.g. '2026.03').
+Each database in a release refer to a specific organism.
 }
 \examples{
-# Get the list of all databases included in geneslator
+# List all databases included in the current geneslator release
 availableDatabases()
+
+# List all databases included in geneslator release version 2025.12
+availableDatabases("2025.12")
+
 }
 \seealso{
-\code{\link{GeneslatorDb}}
+\code{\link{GeneslatorDb}}, \code{\link{availableVersions}}.
 }

@@ -2,6 +2,7 @@
 
 export(GeneslatorDb)
 export(availableDatabases)
+export(availableVersions)
 exportClasses(GeneslatorDb)
 exportMethods(columns)
 exportMethods(keys)

@@ -2,41 +2,112 @@
 # File: R/db-querying.R
 # ========================================
 
+#' @title Available database versions in geneslator
+#'
+#' @description
+#' `availableVersions` lists all possible versions of the annotation databases 
+#' that can be queried in the \pkg{geneslator} package. Databases are updated
+#' on a monthly basis and available as GitHub Releases at 
+#' \url{https://github.com/knowmics-lab/geneslator-data/releases}. 
+#' Each release refer to a specific version of the databases. Versions are
+#' indicated as `year.month`, where `year` and `month` denote the year and the
+#' month of the publication of the release (e.g. '2026.03').
+#'
+#' @return `availableVersions` returns a character vector with all available
+#' versions of the geneslator annotation databases. 
+#'
+#' @seealso \code{\link{GeneslatorDb}}, \code{\link{availableDatabases}}.
+#'
+#' @examples
+#' # List all available versions of geneslator databases
+#' availableVersions()
+#' @export
+availableVersions <- function() {
+    if(!curl::has_internet()){
+        msg <- paste0("Failed to retrieve the list of all available versions ",
+        "of geneslator annotation databases.\nNo internet connection")
+        stop(msg)
+    }
+    db.versions <- gh::gh("GET /repos/knowmics-lab/geneslator-data/releases", 
+    owner = "knowmics-lab", repo = "geneslator-data")
+    db.versions <- vapply(db.versions,function(x){x$tag_name},
+    FUN.VALUE=character(1))
+    return(db.versions)
+}
+
 #' @title Available databases in geneslator
 #'
 #' @description
 #' `availableDatabases` lists all possible annotation databases that can be 
-#' queried in the \pkg{geneslator} package. Databases are available as a 
-#' GitHub Release at https://github.com/knowmics-lab/geneslator/releases. 
-#' Each database refer to a specific organism. 
+#' queried in the \pkg{geneslator} package. Databases are updated
+#' on a monthly basis and available as GitHub Releases at 
+#' \url{https://github.com/knowmics-lab/geneslator-data/releases}. 
+#' Each release refer to a specific version of the databases. Versions are
+#' indicated as `year.month`, where `year` and `month` denote the year and the
+#' month of the publication of the release (e.g. '2026.03').
+#' Each database in a release refer to a specific organism. 
 #'
+#' @param release.version Release version of the databases. By default, the 
+#' most recent version is considered ("latest"). Older versions must be 
+#' indicated as `year.month`, where `year` and `month` denote the year and the 
+#' month of the publication of the release (e.g. "2026.03"). See 
+#' [availableVersions()] for the list of available release versions. 
+#' 
 #' @return `availableDatabases` returns a dataframe which reports, for each
-#' annotation database: database name, scientific name and Taxonomy ID of the 
-#' organism it refers to and number, release date and MD5 security check of 
-#' the most recent version available in the GitHub Release. 
+#' annotation database: database name, scientific name of the organism, 
+#' Taxonomy ID of the organism, MD5 security check of the SQLite database 
+#' file and release version. Database info refer to the release version 
+#' specified by the `version` parameter.  
 #'
-#' @seealso \code{\link{GeneslatorDb}}
+#' @seealso \code{\link{GeneslatorDb}}, \code{\link{availableVersions}}.
 #'
 #' @examples
-#' # Get the list of all databases included in geneslator
+#' # List all databases included in the current geneslator release
 #' availableDatabases()
+#' 
+#' # List all databases included in geneslator release version 2025.12
+#' availableDatabases("2025.12")
+#' 
 #' @export
-availableDatabases <- function() {
-    url <- paste0("https://github.com/knowmics-lab/",
-    "geneslator/releases/download/GeneslatorDb/databases.json")
+availableDatabases <- function(release.version = "latest") {
+    if(!curl::has_internet()){
+        msg <- paste0("Failed to retrieve list of available annotation ",
+        "databases.\nNo internet connection")
+        stop(msg)
+    }
+    tryCatch({
+        if(release.version=="latest"){
+            data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
+            "geneslator-data/releases/latest"))
+        } else{
+            data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
+            "geneslator-data/releases/tags/",release.version))
+        }
+    }, error = function(e) {
+        msg <- paste0("Failed to retrieve the list of geneslator databases ",
+        "version ",release.version,"\nVersion ",release.version,
+        " does not exist","\n Run availableVersions() to check ",
+        "available releases of geneslator databases.")
+        stop(msg) 
+    })
+    db.version <- data.release$tag_name
+    url.db <- paste0("https://github.com/knowmics-lab/",
+    "geneslator-data/releases/download/",db.version,"/databases.json")
     temp.file <- tempfile(fileext = paste0(".json"))
     tryCatch({
         #Download database info file
-        utils::download.file(url = url, destfile = temp.file, quiet = TRUE)
+        utils::download.file(url = url.db, destfile = temp.file, quiet = TRUE)
     }, error = function(e) {
         msg <- paste0("Failed to retrieve list of annotation databases from ",
         url,"\nCheck internet connection")
         stop(msg) 
     })
-    list.db <- jsonlite::fromJSON(temp.file)
+    list.databases <- jsonlite::fromJSON(temp.file)
+    list.databases <- list.databases[order(list.databases$Organism),]
+    list.databases$Version <- db.version
     #Clean temp file
     invisible(file.remove(temp.file))
-    return(list.db)
+    return(list.databases)
 }
 
 #' @title GeneslatorDb class
@@ -50,22 +121,30 @@ availableDatabases <- function() {
 #' in the `geneslator` package. It wraps an `OrgDb` object, which represents 
 #' the annotation database of a specific organism. 
 #' 
+#' Annotation databases used by \pkg{geneslator} are updated on a monthly basis 
+#' and available as GitHub Releases at 
+#' \url{https://github.com/knowmics-lab/geneslator-data/releases} as SQLite 
+#' files. Each release refers to a specific version of the databases. Versions 
+#' are indicated as `year.month`, where `year` and `month` denote the year and 
+#' the month of the publication of the release (e.g. '2026.03'). Each database 
+#' in a release refers to a specific organism.
+#'
 #' The constructor method `GeneslatorDb(org)` creates a new `GeneslatorDb` 
 #' object for the annotation database of organism `org`. Once created, the 
 #' object is exported to the global environment of the user as a variable 
 #' having the same name of the annotation database (e.g. `org.Hsapiens.db` for 
-#' Human, `org.Mmusculus.db` for Mouse). See [availableDatabases()] for the 
-#' list of available databases.  
-#' 
-#' Annotation databases used by \pkg{geneslator} are stored as SQLite files in 
-#' a remote repository at https://github.com/knowmics-lab/geneslator/releases. 
+#' Human, `org.Mmusculus.db` for Mouse). By default, the constructor method 
+#' considers the latest release of the database. An older version can be 
+#' specified through parameter `release.version`. See [availableDatabases()] 
+#' and [availableVersions()] for the list of available databases and release 
+#' versions.
+#'
 #' When called, the constructor method first look for a copy of the SQLite 
 #' file in the R cache folder of the user. If the SQLite file exists and is 
-#' updated, the latter is used to create the `GeneslatorDb` object. If an old 
-#' version of the SQLite file exists, upon request by the user, the new 
-#' version is copied in the R cache before creating the object. If the SQLite 
-#' file does not exist, the latter is automatically copied in the 
-#' \pkg{geneslator} package cache, before creating the object.
+#' up-to-date, the cached copy is used to create the `GeneslatorDb` object. 
+#' Otherwise, upon request by the user, the database is dowloaded from the 
+#' remote release and copied in the \pkg{geneslator} package cache, before 
+#' creating the object.
 #' 
 #' @slot db The annotation database represented as an `OrgDb` object.
 #' 
@@ -73,40 +152,50 @@ availableDatabases <- function() {
 #' organism (e.g. "Homo sapiens") or its Taxonomy ID. 
 #' See [availableDatabases()] for the list of supported organisms.
 #' 
+#' @param release.version A character string indicating the release version of 
+#' the annotation database (e.g. "2025-12"). See [availableVersions()] for the 
+#' list of available releases.
+#'
 #' @returns A `GeneslatorDb` object.
 #' 
 #' @examples
 #' # Create a GeneslatorDb object for Human
-#' # First call: download human db (org.Hsapiens.db), then load it from cache 
+#' # First call: download human db (org.Hsapiens.db) from latest release and 
+#' # save it to R cache 
 #' GeneslatorDb("Homo sapiens")
 #' org.Hsapiens.db
-#' 
-#' # Create a GeneslatorDb object for Human
 #' # Second call: load db from local cache
 #' GeneslatorDb("Homo sapiens")
 #' org.Hsapiens.db
 #' 
-#' # Create a GeneslatorDb object for Fly (use taxonomy id)
-#' GeneslatorDb("7227")
+#' # Create a GeneslatorDb object for Fly. 
+#' # Use taxonomy id and release version 2025.12
+#' GeneslatorDb("7227","2025.12")
 #' org.Dmelanogaster.db
 #' 
 #' @importFrom AnnotationDbi loadDb
 #' @export
-GeneslatorDb <- function(org) {
-    #Check if annotation database for this organism is available
-    list.databases <- availableDatabases()
+GeneslatorDb <- function(org, release.version="latest") {
+    #Check if annotation database for the required organism and release version
+    #is available
+    list.databases <- availableDatabases(release.version)
+    db.version <- unique(list.databases$Version)
     if(org %in% list.databases$Organism){
         db.name <- list.databases[list.databases$Organism==org,"Name"]
     } else if(org %in% list.databases$TaxID){
         db.name <- list.databases[list.databases$TaxID==org,"Name"]
     } else {
         stop("Organism '", org, "' not supported.\n",
-        "See availableDatabases() to view the complete list.", call. = FALSE)
+        "See availableDatabases('",release.version,"') to view the complete ",
+        "list.", call. = FALSE)
     }
-    db.version <- list.databases[list.databases$Name==db.name,"Version"]
     db.md5 <- list.databases[list.databases$Name==db.name,"MD5"]
+    is.latest <- FALSE
+    if(release.version=="latest"){
+        is.latest <- TRUE
+    }
     #Get database local path (after downloading it if necessary)
-    org.db <- .loadAnnotationDb(db.name, db.version, db.md5)
+    org.db <- .loadAnnotationDb(db.name, db.version, db.md5, is.latest)
     #Create object GeneslatorDb
     assign(db.name, methods::new("GeneslatorDb",db=org.db), envir = .GlobalEnv)
 }
