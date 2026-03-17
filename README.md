@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-Artistic--2.0-blue.svg)](https://opensource.org/licenses/Artistic-2.0)
 <!-- badges: end -->
 
-**geneslator** is a comprehensive R package for gene identifier conversion and genome annotation across multiple model organisms. The package integrates data from several cross-organism databases and organism-specific resources within a single, coherent framework. Databases are updated each month and all monthly releases are available at [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>)
+**geneslator** is a comprehensive R package for gene identifier conversion and genome annotation across multiple model organisms. The package integrates data from several cross-organism databases and organism-specific resources within a single, coherent framework. Databases are updated each month and all monthly releases are available at [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>).
 
 ## Key Features
 
@@ -75,7 +75,7 @@ select(org.Hsapiens.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGG
 
 ## Database Management
 
-Annotation databases are automatically downloaded from [<geneslator GitHub release page>](<https://github.com/knowmics-lab/geneslator-data/releases>) 
+Annotation databases are automatically downloaded from [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>).
 when needed and cached locally.
 
 When you import an annotation database in geneslator:
