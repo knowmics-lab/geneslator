@@ -10,30 +10,36 @@ NULL
 #' If annotation db is not up to date, eventually download it before loading
 #' @keywords internal
 #' @noRd
-.loadAnnotationDb <- function(db.name, remote.version, remote.md5) {
+.loadAnnotationDb <- function(db.name, remote.version, remote.md5, is.latest) {
     #Check if annotation db is present in local package cache
     cache.dir <- tools::R_user_dir("geneslator", which = "cache")
-    db.file <- paste0(cache.dir,"/",db.name,".sqlite")
-    if(file.exists(db.file)){
-        #Annotation db is present in local package cache
-        #Check if it is updated
-        db.version.file <- paste0(cache.dir,"/",db.name,".version")
-        local.version <- read.table(db.version.file)$V1
-        if(local.version!=remote.version) {
-            #Old db version. Ask if downloading new version
-            message("Available update for ",db.name," database")
-            message("Local version: ", local.version)
-            message("Available version: ", remote.version)
-            if (interactive()) {
-                response <- readline("Do you want to update it now? (y/n): ")
-                if (tolower(trimws(response)) == "y") {
-                    .downloadAnnotationDb(db.name,cache.dir,remote.version,
-                    remote.md5)
+    db.file <- ifelse(is.latest,list.files(cache.dir,pattern=paste0(db.name,
+    ".*_latest"),full.names = TRUE),list.files(cache.dir,pattern = paste0(
+    db.name,"_",remote.version,".sqlite"),full.names = TRUE))
+    if(!is.na(db.file)){
+        if(is.latest){
+            #Requested latest version. Check if local latest version is updated
+            local.version <- strsplit(db.file,".db_|_latest")[[1]][2]
+            if (local.version!=remote.version) {
+                message("Available update for ",db.name," database")
+                message("Local version: ", local.version)
+                message("Available version: ", remote.version)
+                if(interactive()){
+                    response <- readline("Do you want to update it? (y/n): ")
+                    if(tolower(trimws(response)) == "y"){
+                        .downloadAnnotationDb(db.name,cache.dir,remote.version,
+                        remote.md5,is.latest,is.update=TRUE)
+                    } else {
+                        message("Use existing local version.")
+                    }
                 } else {
-                    message("Use existing local version.")
+                    message("Non-interactive mode: use existing local version.")
                 }
             } else {
-                message("Non-interactive mode: use local version.")
+                if(exists(db.name)){
+                    DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
+                }
+                message("Loaded database found in cache: ", db.file)
             }
         } else {
             if(exists(db.name)){
@@ -42,11 +48,14 @@ NULL
             message("Loaded database found in cache: ", db.file)
         }
     } else {
-        #Database not in cache. Dowload automatically last version
-        message("Database not found in cache: ", db.file)
-        .downloadAnnotationDb(db.name,cache.dir,remote.version,remote.md5)
+        message("Database not found in cache")
+        .downloadAnnotationDb(db.name,cache.dir,remote.version,remote.md5,
+        is.latest,is.update=FALSE)
     }
     #Load annotation database as OrgDb object
+    db.file <- ifelse(is.latest,paste0(cache.dir,"/",db.name,"_",remote.version,
+    "_latest.sqlite"),paste0(cache.dir,"/",db.name,"_",remote.version,
+    ".sqlite"))
     org.db <- suppressPackageStartupMessages(AnnotationDbi::loadDb(db.file))
     return(org.db)
 }
@@ -55,17 +64,17 @@ NULL
 #' @keywords internal
 #' @noRd
 .downloadAnnotationDb <- function(db.name,cache.dir,remote.version,
-remote.md5) {
+remote.md5, is.latest, is.update) {
     #URL of remote repository
     url <- paste0("https://github.com/knowmics-lab/",
-    "geneslator/releases/download/GeneslatorDb/",db.name,".sqlite")
+    "geneslator-data/releases/download/",remote.version,"/",db.name,".sqlite")
     message("========================================")
     message("Download database ", db.name)
     message("Version: ", remote.version)
     message("========================================")
     message("This can take few minutes...")
     #Increase timeout for download to 10 minutes
-    options(timeout = 600)
+    options(timeout = 3600)
     tryCatch({
         #Download annotation database
         temp.file <- tempfile(fileext=".sqlite")
@@ -75,16 +84,23 @@ remote.md5) {
         local.md5 <- tools::md5sum(temp.file)
         if (local.md5!=remote.md5) {
             file.remove(temp.file)
-            stop("Downloaded annotation db file incomplete or wrong")
+            stop("Incomplete download of annotation db file")
         }
-        local.file.name <- paste0(cache.dir,"/",db.name,".sqlite")
+        if(is.latest){
+            local.file.name <- paste0(cache.dir,"/",db.name,"_",remote.version,
+            "_latest.sqlite")
+        } else {
+            local.file.name <- paste0(cache.dir,"/",db.name,"_",remote.version,
+            ".sqlite")
+        }
         if(exists(db.name)){
             DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
         }
+        if(is.latest && is.update){
+            file.remove(list.files(cache.dir,pattern=paste0(db.name,
+            ".*_latest"),full.names = TRUE))
+        }
         file.rename(temp.file, local.file.name)
-        #Update version file
-        write.table(remote.version, paste0(cache.dir,"/",db.name,".version"), 
-        col.names=FALSE, quote=FALSE, row.names=FALSE)
         message("Download completed successfully!")
         message("File: ", local.file.name)
     }, error = function(e) {

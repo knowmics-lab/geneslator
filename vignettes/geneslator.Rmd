@@ -90,19 +90,44 @@ library(geneslator)
 # Import annotation databases
 
 **geneslator** provides species-specific annotation databases for several
-organisms. Type `availableDatabases()` to retrieve the list of currently
-available databases and supported species.
+organisms. Annotation databases are stored as SQLite files in different GitHub 
+Releases at https://github.com/knowmics-lab/geneslator-data/releases. Each 
+release refers to a specific version of the databases. Versions are tagged 
+as `year.month`, where `year` and `month` denote the year and the month of the 
+publication of the release (e.g. '2026.03' for March 2026). 
+Databases are updated on a monthly basis.
+
+Type `availableDatabases()` to retrieve the list of available databases and 
+supported species in the most recent release.
 
 ```{r available-organisms, eval=TRUE}
 # List organisms annotated in geneslator
-geneslator::availableDatabases()
+availableDatabases()
 ```
 
-Annotation databases are stored as SQLite files in a remote repository at
-https://github.com/knowmics-lab/geneslator/releases. To query a database for a 
-specific organism `org`, you first need to import it, by using the 
-`GeneslatorDb` function. `org` can be either the scientific name of the 
-organism (e.g. "Homo sapiens") or its Taxonomy ID (e.g. "10090" for Mouse).
+The parameter `release.version` can be used to retrieve the list of all 
+available databases in an older release.
+
+```{r available-organisms-older, eval=TRUE}
+# List organisms annotated in geneslator (release December 2025)
+availableDatabases(release.version = "2025.12")
+```
+
+A complete list of all available release versions can be obtained with 
+`availableVersions()`.
+
+```{r available-versions, eval=TRUE}
+# Import human db again. Now cache data will be used to import db
+availableVersions()
+```
+
+To query a database for a specific organism `org`, you first need to import 
+it, by using the `GeneslatorDb` function. `org` can be either the scientific 
+name of the organism (e.g. "Homo sapiens") or its Taxonomy ID (e.g. "10090" 
+for Mouse). The function creates a new `GeneslatorDb` object for the 
+requested database, which is then exported to the global environment of the 
+user as a variable having the same name of the SQLite annotation database 
+(e.g. `org.Hsapiens.db` for Human, `org.Mmusculus.db` for Mouse).
 
 ```{r geneslator-db, eval=TRUE}
 # Import human annotation db (after downloading it from remote repository)
@@ -127,6 +152,19 @@ the database.
 ```{r geneslator-db-cache, eval=TRUE}
 # Import human db again. Now cache data will be used to import db
 GeneslatorDb("Homo sapiens")
+```
+
+By default, `GeneslatorDb` queries the latest release. To retrieve an older 
+version of the database, you can set the `release.version` parameter to the
+desired release version. Again, a local copy of the database (distinct from the
+latest release) will be stored into your R cache folder, so that future calls 
+to the same database will simply import it from your cache.
+
+```{r geneslator-db-older, eval=TRUE}
+# Import yeast annotation db from release 2025.12 (December 2025)
+GeneslatorDb("Saccharomyces cerevisiae",release.version = "2025.12")
+# Info about the imported human annotation database object
+org.Scerevisiae.db
 ```
 
 
