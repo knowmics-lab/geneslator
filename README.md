@@ -43,7 +43,8 @@ library(geneslator)
 # Check available databases in the latest release
 availableDatabases()
 
-# Import human annotation database "org.Hsapiens.db" (download database automatically if needed) from the latest release
+# Import human annotation database "org.Hsapiens.db" (download database automatically if needed) from
+ the latest release
 GeneslatorDb("Homo sapiens")
 
 # List all columns present in human annotation database 
