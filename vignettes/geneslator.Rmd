@@ -7,7 +7,7 @@ author:
   email: giovanni.micale@unict.it
 - name: Giulia Cavallaro
   affiliation: University of Catania
-  email: giuliacava96@gmail.com
+  email: giuliacavallaro96@outlook.it
 - name: Grete Francesca Privitera
   affiliation: University of Catania
   email: grete.privitera@unict.it
