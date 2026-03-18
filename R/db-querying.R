@@ -2,6 +2,9 @@
 # File: R/db-querying.R
 # ========================================
 
+# Crea un ambiente privato per il pacchetto
+.geneslator_cache <- new.env(parent = emptyenv())
+
 #' @title Available database versions in geneslator
 #'
 #' @description
@@ -70,45 +73,51 @@ availableVersions <- function() {
 #' 
 #' @export
 availableDatabases <- function(release.version = "latest") {
-    if(!curl::has_internet()){
-        msg <- paste0("Failed to retrieve list of available annotation ",
-        "databases.\nNo internet connection")
-        message(msg)
-        return(NULL)
-    }
-    tryCatch({
-        if(release.version=="latest"){
-            data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
-            "geneslator-data/releases/latest"))
-        } else{
-            data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
-            "geneslator-data/releases/tags/",release.version))
+    cached.list.dbs <- get0(release.version, envir = .geneslator_cache)
+    if(is.null(cached.list.dbs)){
+        if(!curl::has_internet()){
+            msg <- paste0("Failed to retrieve list of available annotation ",
+            "databases.\nNo internet connection")
+            message(msg)
+            return(NULL)
         }
-    }, error = function(e) {
-        msg <- paste0("Failed to retrieve the list of geneslator databases ",
-        "version ",release.version,"\nVersion ",release.version,
-        " does not exist","\n Run availableVersions() to check ",
-        "available releases of geneslator databases.")
-        stop(msg) 
-    })
-    db.version <- data.release$tag_name
-    url.db <- paste0("https://github.com/knowmics-lab/",
-    "geneslator-data/releases/download/",db.version,"/databases.json")
-    temp.file <- tempfile(fileext = paste0(".json"))
-    tryCatch({
-        #Download database info file
-        utils::download.file(url = url.db, destfile = temp.file, quiet = TRUE)
-    }, error = function(e) {
-        msg <- paste0("Failed to retrieve list of annotation databases from ",
-        url,"\nCheck internet connection")
-        stop(msg) 
-    })
-    list.databases <- jsonlite::fromJSON(temp.file)
-    list.databases <- list.databases[order(list.databases$Organism),]
-    list.databases$Version <- db.version
-    #Clean temp file
-    invisible(file.remove(temp.file))
-    return(list.databases)
+        tryCatch({
+            if(release.version=="latest"){
+                data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
+                "geneslator-data/releases/latest"))
+            } else{
+                data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
+                "geneslator-data/releases/tags/",release.version))
+            }
+        }, error = function(e) {
+            msg <- paste0("Failed to retrieve the list of geneslator databases",
+            " version ",release.version,"\nVersion ",release.version,
+            " does not exist","\n Run availableVersions() to check ",
+            "available releases of geneslator databases.")
+            stop(msg) 
+        })
+        db.version <- data.release$tag_name
+        url.db <- paste0("https://github.com/knowmics-lab/",
+        "geneslator-data/releases/download/",db.version,"/databases.json")
+        temp.file <- tempfile(fileext = paste0(".json"))
+        tryCatch({
+            #Download database info file
+            utils::download.file(url = url.db, destfile = temp.file, quiet = TRUE)
+        }, error = function(e) {
+            msg <- paste0("Failed to retrieve list of annotation databases from ",
+            url,"\nCheck internet connection")
+            stop(msg) 
+        })
+        list.databases <- jsonlite::fromJSON(temp.file)
+        list.databases <- list.databases[order(list.databases$Organism),]
+        list.databases$Version <- db.version
+        assign(release.version, list.databases, envir = .geneslator_cache)
+        #Clean temp file
+        invisible(file.remove(temp.file))
+        return(list.databases)
+    } else {
+        return(cached.list.dbs)
+    }
 }
 
 #' @title GeneslatorDb class
