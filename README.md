@@ -126,6 +126,8 @@ citation("geneslator")
 ```
 
 geneslator: an R package for comprehensive gene identifier conversion and annotation. Giulia Cavallaro, Giovanni Micale, Grete Francesca Privitera, Alfredo Pulvirenti, Stefano Forte, Salvatore Alaimo. bioRxiv 2026.03.30.714723; doi: https://doi.org/10.64898/2026.03.30.714723 
+
+
 Micale G, Cavallaro G, Privitera GF (2026). geneslator: A Comprehensive Gene Identifier Conversion Tool. R package version 0.99.0. https://github.com/knowmics-lab/geneslator
 
 ## License
