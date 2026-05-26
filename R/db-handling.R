@@ -12,9 +12,12 @@ NULL
 #' @noRd
 .loadAnnotationDb <- function(db.name, remote.version, remote.md5, is.latest) {
     cache.dir <- tools::R_user_dir("geneslator", which = "cache")
-    db.file <- ifelse(is.latest,list.files(cache.dir,pattern=paste0(db.name,
-    ".*_latest"),full.names = TRUE),list.files(cache.dir,pattern = paste0(
-    db.name,"_",remote.version,".sqlite"),full.names = TRUE))
+    db.file <- if (is.latest) {
+    list.files(cache.dir,pattern=paste0(db.name,".*_latest"),full.names=TRUE)
+    } else {
+    list.files(cache.dir,pattern=paste0(db.name,"_",remote.version,".sqlite"), 
+    full.names = TRUE)
+    }
     if(!is.na(db.file)){
         if(is.latest){
             local.version <- strsplit(db.file,".db_|_latest")[[1]][2]
@@ -30,8 +33,6 @@ NULL
                     } else {
                         message("Use existing local version.")
                     }
-                } else {
-                    message("Non-interactive mode: use existing local version.")
                 }
             } else {
                 if(exists(db.name)){
