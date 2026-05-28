@@ -12,13 +12,14 @@ NULL
 #' @noRd
 .loadAnnotationDb <- function(db.name, remote.version, remote.md5, is.latest) {
     cache.dir <- tools::R_user_dir("geneslator", which = "cache")
+    if (!dir.exists(cache.dir)) { dir.create(cache.dir, recursive = TRUE) }
     db.file <- if (is.latest) {
     list.files(cache.dir,pattern=paste0(db.name,".*_latest"),full.names=TRUE)
     } else {
     list.files(cache.dir,pattern=paste0(db.name,"_",remote.version,".sqlite"), 
     full.names = TRUE)
     }
-    if(!is.na(db.file)){
+    if(length(db.file)>0){
         if(is.latest){
             local.version <- strsplit(db.file,".db_|_latest")[[1]][2]
             if (curl::has_internet() && local.version!=remote.version) {
@@ -35,14 +36,12 @@ NULL
                     }
                 }
             } else {
-                if(exists(db.name)){
-                    DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
+if(exists(db.name)){DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
                 }
                 message("Loaded database found in cache: ", db.file)
             }
         } else {
-            if(exists(db.name)) DBI::dbDisconnect(
-            AnnotationDbi::dbconn(get(db.name)@db))
+if(exists(db.name)) DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
             message("Loaded database found in cache: ", db.file)
         }
     } else {
