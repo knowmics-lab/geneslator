@@ -5,9 +5,7 @@
 [![License](https://img.shields.io/badge/license-Artistic--2.0-blue.svg)](https://opensource.org/licenses/Artistic-2.0)
 <!-- badges: end -->
 
-**geneslator** is a comprehensive R package for gene identifier conversion and genome annotation across multiple model organisms. The package integrates data from several cross-organism databases and organism-specific resources within a single, coherent framework. A description about how databases are built is available at [<https://github.com/knowmics-lab/geneslator-data>](<https://github.com/knowmics-lab/geneslator-data>). Databases are updated each month and all monthly releases are available at [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>). 
-
-## Key Features
+**geneslator** is a comprehensive R package for gene identifier conversion and genome annotation across multiple model organisms. The package integrates data from several cross-organism databases and organism-specific resources within a single, coherent framework. Key features are:
 
 - **Multiple database integration**: Integrates data from cross-organism databases (NCBI, Ensembl, UniProt, Alliance of Genome Resources, GO, KEGG, Reactome, Wikipathways) and organism-specific resources (HGNC, MGI, RGD, SGD, WormBase, Flybase, ZFIN, TAIR)
 - **Archive search**: Supports searching using both current and archived gene identifiers in NCBI and Ensembl databases
@@ -15,16 +13,41 @@
 - **Automatic download**: Annotation databases are automatically downloaded when needed and cached locally
 - **Version management**: Independent versioning system for databases with automatic update checks
 
-## Supported Organisms
+Four different types of data about a gene are integrated: annotations from general databases (symbol, aliases, full name, genetype), annotations from species-specific databases, functional annotations (pathways and gene ontologies), and orthologs.
 
-- Human (*Homo sapiens*)
-- Mouse (*Mus musculus*)
-- Rat (*Rattus norvegicus*)
-- Yeast (*Saccharomyces cerevisiae*)
-- Worm (*Caenorhabditis elegans*)
-- Fly (*Drosophila melanogaster*)
-- Zebrafish (*Danio rerio*)
-- Arabidopsis (*Arabidopsis thaliana*)
+![Geneslator's workflow](GeneslatorWorkflow.png)
+
+Currently, annotation databases have been built for the following 8 model organisms: Human (*Homo sapiens*), Mouse (*Mus musculus*), Rat (*Rattus norvegicus*), Fly (*Drosophila melanogaster*), Zebrafish (*Danio rerio*), Yeast (*Saccharomyces cerevisiae*), Worm (*Caenorhabditis elegans*), and Arabidopsis (*Arabidopsis thaliana*). More organisms will be included in future releases of **geneslator**.
+
+
+## Data sources
+
+General information about a gene (symbol, aliases, full name, and genetype) are extracted from NCBI Gene and Ensembl. Genetype represents the biotype classification of a gene (e.g., “protein-coding gene”, “non-coding RNA”, “pseudogene”, “lncRNA”). Databases for A.thaliana, C.elegans, D.melanogaster, and S.cerevisiae also include locus tag identifiers. 
+
+Identifiers of a gene include Entrez GeneIDs (taken from NCBI), Ensembl GeneIDs (taken from NCBI and Ensembl), Uniprot IDs of its proteins (taken from Uniprot) and species-specific identifiers, coming from the most popular species-specific genome database, namely HGNC for Human, MGI for Mouse, RGD for Rat, SGD for Yeast, WormBase for Worm, FlyBase for Fly, ZFIN for Zebrafish and TAIR for Arabidopsis. For Zebrafish, we also collect Ensembl GeneID and Gene symbols data from HCOP. 
+
+**geneslator** annotation databases also integrates old discontinued and replaced gene identifiers from NCBI gene and Ensembl (starting from v.28 for Arabidopsis and from v.81 in the other organisms). These archived identifiers are stored in different columns with respect to current identifiers.
+
+Genes’ orthologs are taken from NCBI, Ensembl and AllianceGenome. For Human, we also collect data from HCOP. Orthologs are represented by their gene symbols.
+
+Pathway data include pathway ids and their names and are collected from KEGG Pathways, Reactome and Wikipathways.
+
+Gene ontology data are taken from GO and include GO IDs, full names, types (biological process, cellular component or molecular function) and evidence codes of gene annotations.
+
+
+## Data integration
+
+Integration of general information about genes and gene identifiers is done by prioritizing NCBI information over Ensembl data. For Zebrafish, integration of gene identifiers is done by giving the highest priority to NCBI, followed by HCOP and Ensembl.
+
+Integration of orthologs data referring to the same gene has been done according to the following order: NCBI, HCOP (for Human), AllianceGenome and Ensembl. 
+
+Annotation databases resulting from the integration of all gene are built as SQLite objects using the AnnotationForge R package.
+
+
+## Database releases
+
+**geneslator** annotation databases are stored as a Zenodo record and available at [<https://zenodo.org/records/20457977>](<https://zenodo.org/records/20457977>). Databases are updated on a monthly basis. At each update, annotation databases are stored in a new version of the Zenodo record.
+
 
 ## Installation
 
@@ -73,10 +96,9 @@ select(org.Hsapiens.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGG
        keytype = "SYMBOL")
 ```
 
-## Database Management
+## Versioning management
 
-Annotation databases are automatically downloaded from [<https://github.com/knowmics-lab/geneslator-data/releases>](<https://github.com/knowmics-lab/geneslator-data/releases>)
-when needed and cached locally.
+Annotation databases are automatically downloaded from [<https://zenodo.org/records/20457977>](<https://zenodo.org/records/20457977>) when needed and cached locally.
 
 When you import an annotation database in geneslator:
 - If the database is not present in the local cache, it is automatically downloaded
@@ -91,8 +113,6 @@ gdb <- GeneslatorDb("Homo sapiens")
 gdb <- GeneslatorDb("Homo sapiens")
 ```
 
-## Versioning Management
- 
 Past releases of annotation databases can be imported and queried in the same way as latest releases. 
 
 ```r
