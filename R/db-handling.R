@@ -10,7 +10,7 @@ NULL
 #' If annotation db is not up to date, eventually download it before loading
 #' @keywords internal
 #' @noRd
-.loadAnnotationDb <- function(db.name, remote.version, remote.md5, is.latest) {
+.loadAnnotationDb <- function(db.name,remote.version,remote.md5,doi,is.latest){
     cache.dir <- tools::R_user_dir("geneslator", which = "cache")
     if (!dir.exists(cache.dir)) { dir.create(cache.dir, recursive = TRUE) }
     db.file <- if (is.latest) {
@@ -30,7 +30,7 @@ NULL
                     response <- readline("Do you want to update it? (y/n): ")
                     if(tolower(trimws(response)) == "y"){
                         .downloadAnnotationDb(db.name,cache.dir,remote.version,
-                        remote.md5,is.latest,is.update=TRUE)
+                        remote.md5,doi,is.latest,is.update=TRUE)
                     } else {
                         message("Use existing local version.")
                     }
@@ -51,7 +51,7 @@ if(exists(db.name)) DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
             "remote repository.\nNo internet connection")
             stop(msg)
         }
-        .downloadAnnotationDb(db.name,cache.dir,remote.version,remote.md5,
+        .downloadAnnotationDb(db.name,cache.dir,remote.version,remote.md5,doi,
         is.latest,is.update=FALSE)
     }
     db.file <- ifelse(is.latest,list.files(cache.dir,pattern=paste0(db.name,
@@ -65,10 +65,7 @@ if(exists(db.name)) DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
 #' @keywords internal
 #' @noRd
 .downloadAnnotationDb <- function(db.name,cache.dir,remote.version,
-remote.md5, is.latest, is.update) {
-    #URL of remote repository
-    url <- paste0("https://github.com/knowmics-lab/",
-    "geneslator-data/releases/download/",remote.version,"/",db.name,".sqlite")
+remote.md5, db.doi, is.latest, is.update) {
     message("========================================")
     message("Download database ", db.name)
     message("Version: ", remote.version)
@@ -77,10 +74,15 @@ remote.md5, is.latest, is.update) {
     #Increase timeout for download to 10 minutes
     options(timeout = 3600)
     tryCatch({
+        #Access Zenodo data by DOI
+        zenodo <- zen4R::ZenodoManager$new()
+        record <- suppressMessages(zenodo$getRecordByDOI(db.doi))
         #Download annotation database
-        temp.file <- tempfile(fileext=".sqlite")
-        utils::download.file(url = url, mode = "wb", quiet = FALSE,
-        destfile = temp.file, method = "auto")
+        file.url <- paste0("https://zenodo.org/records/",record$id,"/files/",
+        db.name,".sqlite")
+        temp.file <- file.path(tempdir(), paste0(db.name, ".sqlite"))
+        utils::download.file(url=file.url,destfile=temp.file,mode="wb",
+        quiet=FALSE,method="auto")
         #Check file integrity
         local.md5 <- tools::md5sum(temp.file)
         if (local.md5!=remote.md5) {

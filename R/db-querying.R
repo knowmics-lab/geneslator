@@ -31,10 +31,10 @@ availableVersions <- function() {
         "of geneslator annotation databases.\nNo internet connection")
         stop(msg)
     }
-    db.versions <- gh::gh("GET /repos/knowmics-lab/geneslator-data/releases", 
-    owner = "knowmics-lab", repo = "geneslator-data")
-    db.versions <- vapply(db.versions,function(x){x$tag_name},
-    FUN.VALUE=character(1))
+    concept.doi <- "10.5281/zenodo.20448208"
+    zenodo <- suppressMessages(zen4R::ZenodoManager$new())
+    records <- suppressMessages(zenodo$getRecordByConceptDOI(concept.doi))
+    db.versions <- suppressMessages(records$getVersions()$version)
     return(db.versions)
 }
 
@@ -76,43 +76,46 @@ availableDatabases <- function(release.version = "latest") {
     cached.list.dbs <- get0(release.version, envir = .geneslator_cache)
     if(is.null(cached.list.dbs)){
         if(!curl::has_internet()){
-            msg <- paste0("Failed to retrieve list of available annotation ",
+            message("Failed to retrieve list of available annotation ",
             "databases.\nNo internet connection")
-            message(msg)
             return(NULL)
         }
         tryCatch({
+            api.url <- paste0("https://zenodo.org/api/records?q=conceptrecid:", 
+            "20448208&all_versions=true")
+            response <- jsonlite::fromJSON(api.url)
+    versions.meta <- response$hits$hits$metadata[,c("doi","version")]
+    versions.meta <- versions.meta[order(versions.meta$version),]
             if(release.version=="latest"){
-                data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
-                "geneslator-data/releases/latest"))
+                record.doi <- versions.meta[nrow(versions.meta),"doi"]
             } else{
-                data.release <- gh::gh(paste0("GET /repos/knowmics-lab/",
-                "geneslator-data/releases/tags/",release.version))
+    record.doi <- versions.meta[versions.meta$version==release.version,"doi"]
+    if(length(record.doi)==0){
+    msg <- paste0("Failed to retrieve the list of geneslator data bases ",
+    "version ",release.version,"\nVersion ",release.version," does not exist",
+    "\nRun availableVersions() to check available releases of geneslator.")
+        stop(msg)
+    }
             }
+            zenodo <- zen4R::ZenodoManager$new()
+            record <- suppressMessages(zenodo$getRecordByDOI(record.doi))
         }, error = function(e) {
-            msg <- paste0("Failed to retrieve the list of geneslator databases",
-            " version ",release.version,"\nVersion ",release.version,
-            " does not exist","\n Run availableVersions() to check ",
-            "available releases of geneslator databases.")
-            stop(msg) 
+            stop("Failed to retrieve list of annotation databases\n")
         })
-        db.version <- data.release$tag_name
-        url.db <- paste0("https://github.com/knowmics-lab/",
-        "geneslator-data/releases/download/",db.version,"/databases.json")
-        temp.file <- tempfile(fileext = paste0(".json"))
+        db.version <- record$metadata$version
         tryCatch({
-            #Download database info file
-            utils::download.file(url = url.db, destfile = temp.file, quiet = TRUE)
+            temp.dir <- tempdir()
+            record$downloadFiles(record=record,
+            files="databases.json",path=temp.dir,quiet=TRUE)
+            temp.file <- file.path(temp.dir, "databases.json")
         }, error = function(e) {
-            msg <- paste0("Failed to retrieve list of annotation databases from ",
-            url,"\nCheck internet connection")
-            stop(msg) 
+            stop("Failed to retrieve list of annotation databases") 
         })
         list.databases <- jsonlite::fromJSON(temp.file)
         list.databases <- list.databases[order(list.databases$Organism),]
         list.databases$Version <- db.version
+        list.databases$DOI <- record.doi
         assign(release.version, list.databases, envir = .geneslator_cache)
-        #Clean temp file
         invisible(file.remove(temp.file))
         return(list.databases)
     } else {
@@ -198,8 +201,10 @@ GeneslatorDb <- function(org, release.version="latest") {
         }
         db.name <- paste0("org.",substr(org.info[1],1,1),org.info[2],".db")
         db.md5 <- NULL
+        db.doi <- NULL
     } else {
         db.version <- unique(list.databases$Version)
+        db.doi <- unique(list.databases$DOI)
         if(org %in% list.databases$Organism){
             db.name <- list.databases[list.databases$Organism==org,"Name"]
         } else if(org %in% list.databases$TaxID){
@@ -216,7 +221,7 @@ GeneslatorDb <- function(org, release.version="latest") {
         is.latest <- TRUE
     }
     #Get database local path (after downloading it if necessary)
-    org.db <- .loadAnnotationDb(db.name, db.version, db.md5, is.latest)
+    org.db <- .loadAnnotationDb(db.name, db.version, db.md5, db.doi, is.latest)
     #Create object GeneslatorDb
     assign(db.name, methods::new("GeneslatorDb",db=org.db), envir = .GlobalEnv)
 }
