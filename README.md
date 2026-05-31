@@ -15,7 +15,7 @@
 
 Four different types of data about a gene are integrated: annotations from general databases (symbol, aliases, full name, genetype), annotations from species-specific databases, functional annotations (pathways and gene ontologies), and orthologs.
 
-![Geneslator's workflow](GeneslatorWorkflow.png)
+![Geneslator's workflow](man/figures/GeneslatorWorkflow.png)
 
 Currently, annotation databases have been built for the following 8 model organisms: Human (*Homo sapiens*), Mouse (*Mus musculus*), Rat (*Rattus norvegicus*), Fly (*Drosophila melanogaster*), Zebrafish (*Danio rerio*), Yeast (*Saccharomyces cerevisiae*), Worm (*Caenorhabditis elegans*), and Arabidopsis (*Arabidopsis thaliana*). More organisms will be included in future releases of **geneslator**.
 
