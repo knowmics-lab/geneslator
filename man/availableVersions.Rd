@@ -13,8 +13,8 @@ versions of the geneslator annotation databases.
 \description{
 \code{availableVersions} lists all possible versions of the annotation databases
 that can be queried in the \pkg{geneslator} package. Databases are updated
-on a monthly basis and available as GitHub Releases at
-\url{https://github.com/knowmics-lab/geneslator-data/releases}.
+on a monthly basis and available as different versions of a Zenodo record
+at \url{https://doi.org/10.5281/zenodo.20448208}.
 Each release refer to a specific version of the databases. Versions are
 indicated as \code{year.month}, where \code{year} and \code{month} denote the year and the
 month of the publication of the release (e.g. '2026.03').
