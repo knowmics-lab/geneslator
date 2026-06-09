@@ -30,8 +30,8 @@ in the \code{geneslator} package. It wraps an \code{OrgDb} object, which represe
 the annotation database of a specific organism.
 
 Annotation databases used by \pkg{geneslator} are updated on a monthly basis
-and available as GitHub Releases at
-\url{https://github.com/knowmics-lab/geneslator-data/releases} as SQLite
+and available as different versions of a Zenodo record at
+\url{https://doi.org/10.5281/zenodo.20448208} as SQLite
 files. Each release refers to a specific version of the databases. Versions
 are indicated as \code{year.month}, where \code{year} and \code{month} denote the year and
 the month of the publication of the release (e.g. '2026.03'). Each database

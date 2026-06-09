@@ -90,8 +90,8 @@ library(geneslator)
 # Import annotation databases
 
 **geneslator** provides species-specific annotation databases for several
-organisms. Annotation databases are stored as SQLite files in different GitHub 
-Releases at https://github.com/knowmics-lab/geneslator-data/releases. Each 
+organisms. Annotation databases are stored as SQLite files in different
+versions of a Zenodo record at https://doi.org/10.5281/zenodo.20448208. Each 
 release refers to a specific version of the databases. Versions are tagged 
 as `year.month`, where `year` and `month` denote the year and the month of the 
 publication of the release (e.g. '2026.03' for March 2026). 
