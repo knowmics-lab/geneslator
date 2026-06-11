@@ -54,9 +54,15 @@ if(exists(db.name)) DBI::dbDisconnect(AnnotationDbi::dbconn(get(db.name)@db))
         .downloadAnnotationDb(db.name,cache.dir,remote.version,remote.md5,doi,
         is.latest,is.update=FALSE)
     }
-    db.file <- ifelse(is.latest,list.files(cache.dir,pattern=paste0(db.name,
-    ".*_latest"),full.names = TRUE),list.files(cache.dir,pattern = paste0(
-    db.name,"_",remote.version,".sqlite"),full.names = TRUE))
+    db.file <- if (is.latest) {
+    list.files(cache.dir,pattern=paste0(db.name,".*_latest"),full.names=TRUE)
+    } else {
+    list.files(cache.dir,pattern=paste0(db.name,"_",remote.version,".sqlite"),
+    full.names=TRUE)
+    }
+    if(length(db.file)== 0||is.na(db.file[1])) {
+    stop("Database file not found in cache after download: ",cache.dir)}
+    db.file <- db.file[1]
     org.db <- suppressPackageStartupMessages(AnnotationDbi::loadDb(db.file))
     return(org.db)
 }
@@ -103,7 +109,10 @@ remote.md5, db.doi, is.latest, is.update) {
             file.remove(list.files(cache.dir,pattern=paste0(db.name,
             ".*_latest"),full.names = TRUE))
         }
-        file.rename(temp.file, local.file.name)
+        if(!file.copy(temp.file,local.file.name,overwrite=TRUE)) {
+        stop("Failed to move db file to cache directory: ",local.file.name)
+        }
+        file.remove(temp.file)
         message("Download completed successfully!")
         message("File: ", local.file.name)
     }, error = function(e) {
