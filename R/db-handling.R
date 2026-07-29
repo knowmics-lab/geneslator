@@ -19,7 +19,7 @@ NULL
 .loadAnnotationDb <- function(db.name, remote.version, remote.md5, doi, is.latest) {
   bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
   cache.name <- if (is.latest) {
-    paste0(db.name, "_latest")
+    paste0(db.name, "_", remote.version,"_latest")
   } else {
     paste0(db.name, "_", remote.version)
   }
@@ -99,18 +99,28 @@ NULL
         db.name, ".sqlite"
       )
       cache.name <- if (is.latest) {
-        paste0(db.name, "_latest")
+        paste0(db.name, "_", remote.version, "_latest")
       } else {
         paste0(db.name, "_", remote.version)
       }
-      db.file <- BiocFileCache::bfcadd(bfc, rname = cache.name, fpath = file.url, download = TRUE)
-      # Check file integrity
-      local.md5 <- tools::md5sum(db.file)
+      #Download file
+      temp.file <- file.path(tempdir(), paste0(cache.name, ".sqlite"))
+      utils::download.file(url = file.url, destfile = temp.file, 
+                           mode = "wb", quiet = FALSE, method = "auto")
+      #Check file integrity
+      local.md5 <- tools::md5sum(temp.file)
       if (local.md5 != remote.md5) {
-        hits <- BiocFileCache::bfcquery(bfc, cache.name, field = "rname", exact = TRUE)
-        BiocFileCache::bfcremove(bfc, hits$rid)
+        file.remove(temp.file)
         stop("Incomplete download of annotation db file")
       }
+      #Clean cache before adding new file
+      existing <- BiocFileCache::bfcquery(bfc, cache.name, field = "rname", exact = TRUE)
+      if (nrow(existing) > 0) {
+        BiocFileCache::bfcremove(bfc, existing$rid)
+      }
+      #Add file to BiocFileCache
+      db.file <- BiocFileCache::bfcadd(bfc, rname = cache.name, fpath = temp.file, action = "copy")
+      file.remove(temp.file)
       message("Download completed successfully!")
       message("File: ", db.file)
     },
