@@ -62,17 +62,17 @@ creating the object.
 
 \examples{
 # Create a GeneslatorDb object for Human
-# First call: download human db (org.Hsapiens.db) from latest release and 
-# save it to R cache 
+# First call: download human db (org.Hsapiens.db) from latest release and
+# save it to R cache
 GeneslatorDb("Homo sapiens")
 org.Hsapiens.db
 # Second call: load db from local cache
 GeneslatorDb("Homo sapiens")
 org.Hsapiens.db
 
-# Create a GeneslatorDb object for Fly. 
+# Create a GeneslatorDb object for Fly.
 # Use taxonomy id and release version 2025.12
-GeneslatorDb("7227","2025.12")
+GeneslatorDb("7227", "2025.12")
 org.Dmelanogaster.db
 
 }

@@ -62,31 +62,41 @@ column specified by \code{keytype} parameter and values of the columns specified
 by the \code{columns} parameter.
 }
 \examples{
-#Lookup NCBI gene ids for a given list of gene symbols in fly
+# Lookup NCBI gene ids for a given list of gene symbols in fly
 GeneslatorDb("Drosophila melanogaster")
-geneslator::select(org.Dmelanogaster.db, keys=c("CG14883","GstE2"), 
-columns="ENTREZID", keytype="SYMBOL")
+geneslator::select(org.Dmelanogaster.db,
+  keys = c("CG14883", "GstE2"),
+  columns = "ENTREZID", keytype = "SYMBOL"
+)
 
-# Lookup KEGG pathway ids and their relative full names for a given list 
+# Lookup KEGG pathway ids and their relative full names for a given list
 # of ensembl gene ids in worm
 GeneslatorDb("Caenorhabditis elegans")
-geneslator::select(org.Celegans.db, keys=c("ENSDARG00000013522",
-"ENSDARG00000103044"), columns=c("KEGGPATH","KEGGPATHNAME"), 
-keytype="ENSEMBL")
+geneslator::select(org.Celegans.db,
+  keys = c(
+    "ENSDARG00000013522",
+    "ENSDARG00000103044"
+  ), columns = c("KEGGPATH", "KEGGPATHNAME"),
+  keytype = "ENSEMBL"
+)
 
-# Lookup mouse orthologs for a list of human gene symbols. 
+# Lookup mouse orthologs for a list of human gene symbols.
 # Ignore aliases and return only the first ortholog found for each gene
 GeneslatorDb("Homo sapiens")
-geneslator::select(org.Hsapiens.db, keys=c("BRCA1","PTEN"), 
-columns="ORTHOMOUSE", keytype="SYMBOL", search.aliases = FALSE, 
-orthologs.mapping = "single")
+geneslator::select(org.Hsapiens.db,
+  keys = c("BRCA1", "PTEN"),
+  columns = "ORTHOMOUSE", keytype = "SYMBOL", search.aliases = FALSE,
+  orthologs.mapping = "single"
+)
 
-# Lookup gene ontologies for a list of entrez ids in arabidopsis. 
+# Lookup gene ontologies for a list of entrez ids in arabidopsis.
 # Do not use NCBI archive data
 GeneslatorDb("Arabidopsis thaliana")
-geneslator::select(org.Athaliana.db, keys=c("820005","831939"), 
-columns=c("GO","GONAME","GOTYPE"), keytype="ENTREZID", 
-search.archives = FALSE)
+geneslator::select(org.Athaliana.db,
+  keys = c("820005", "831939"),
+  columns = c("GO", "GONAME", "GOTYPE"), keytype = "ENTREZID",
+  search.archives = FALSE
+)
 
 }
 \seealso{

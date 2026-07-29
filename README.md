@@ -17,14 +17,13 @@ Four different types of data about a gene are integrated: annotations from gener
 
 ![Geneslator's workflow](man/figures/GeneslatorWorkflow.png)
 
-Currently, annotation databases have been built for the following 8 model organisms: Human (*Homo sapiens*), Mouse (*Mus musculus*), Rat (*Rattus norvegicus*), Fly (*Drosophila melanogaster*), Zebrafish (*Danio rerio*), Yeast (*Saccharomyces cerevisiae*), Worm (*Caenorhabditis elegans*), and Arabidopsis (*Arabidopsis thaliana*). More organisms will be included in future releases of **geneslator**.
-
+Currently, annotation databases have been built for 14 different organisms, including Human (*Homo sapiens*), Mouse (*Mus musculus*), Rat (*Rattus norvegicus*), Fly (*Drosophila melanogaster*), Zebrafish (*Danio rerio*), Yeast (*Saccharomyces cerevisiae*), Worm (*Caenorhabditis elegans*), Arabidopsis (*Arabidopsis thaliana*) and 6 more plant species. More organisms will be included in future releases of **geneslator**.
 
 ## Data sources
 
-General information about a gene (symbol, aliases, full name, and genetype) are extracted from NCBI Gene and Ensembl. Genetype represents the biotype classification of a gene (e.g., “protein-coding gene”, “non-coding RNA”, “pseudogene”, “lncRNA”). Databases for A.thaliana, C.elegans, D.melanogaster, and S.cerevisiae also include locus tag identifiers. 
+General information about a gene (symbol, aliases, full name, and genetype) are extracted from NCBI Gene and Ensembl. Genetype represents the biotype classification of a gene (e.g., “protein-coding gene”, “non-coding RNA”, “pseudogene”, “lncRNA”). Where available, locus tag identifiers are also included as gene information.
 
-Identifiers of a gene include Entrez GeneIDs (taken from NCBI), Ensembl GeneIDs (taken from NCBI and Ensembl), Uniprot IDs of its proteins (taken from Uniprot) and species-specific identifiers, coming from the most popular species-specific genome database, namely HGNC for Human, MGI for Mouse, RGD for Rat, SGD for Yeast, WormBase for Worm, FlyBase for Fly, ZFIN for Zebrafish and TAIR for Arabidopsis. For Zebrafish, we also collect Ensembl GeneID and Gene symbols data from HCOP. 
+Identifiers of a gene include Entrez GeneIDs (taken from NCBI), Ensembl GeneIDs (taken from NCBI and Ensembl), Uniprot IDs of its proteins (taken from Uniprot). For species in which Ensembl GeneIDs are generated from Ensembl native annotations (through Ensembl Genebuild) and do not originate from species-specific resources, gene identifiers include species-specific identifiers, coming from the most popular model organism databases, such as HGNC for Human, MGI for Mouse, RGD for Rat, SGD for Yeast and ZFIN for Zebrafish. For Zebrafish, we also collect Ensembl GeneID and Gene symbols data from HCOP. 
 
 **geneslator** annotation databases also integrates old discontinued and replaced gene identifiers from NCBI gene and Ensembl (starting from v.28 for Arabidopsis and from v.81 in the other organisms). These archived identifiers are stored in different columns with respect to current identifiers.
 
@@ -52,10 +51,9 @@ Annotation databases resulting from the integration of all gene are built as SQL
 ## Installation
 
 ```r
-if (!requireNamespace("devtools", quietly = TRUE)) {
-    install.packages("devtools")
-}
-devtools::install_github("knowmics-lab/geneslator", build_vignettes = TRUE)
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("geneslator")
 ```
 
 ## Usage examples

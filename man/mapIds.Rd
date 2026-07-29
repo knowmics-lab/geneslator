@@ -81,31 +81,43 @@ values of the type specified by \code{column} parameter, depending on the
 value of \code{multiVals} parameter.
 }
 \examples{
-# Map NCBI gene ids to gene aliases in yeast. 
+# Map NCBI gene ids to gene aliases in yeast.
 # Return a named vector with 1st mapping found
 GeneslatorDb("Saccharomyces cerevisiae")
-geneslator::mapIds(org.Scerevisiae.db, keys=c("856781","1466469"), 
-column="ALIAS", keytype="ENTREZID")
+geneslator::mapIds(org.Scerevisiae.db,
+  keys = c("856781", "1466469"),
+  column = "ALIAS", keytype = "ENTREZID"
+)
 
-# Map gene symbols to gene ontologies in mouse. 
+# Map gene symbols to gene ontologies in mouse.
 # Return a list with all possible mappings
 GeneslatorDb("Mus musculus")
-geneslator::mapIds(org.Mmusculus.db, keys=c("Grin2a","Rev3l"), column="GO", 
-keytype="SYMBOL", multiVals="list")
+geneslator::mapIds(org.Mmusculus.db,
+  keys = c("Grin2a", "Rev3l"), column = "GO",
+  keytype = "SYMBOL", multiVals = "list"
+)
 
-# Map gene symbols to uniprot ids in rat. Apply a custom function to 
+# Map gene symbols to uniprot ids in rat. Apply a custom function to
 # return the last mapping found and do not use Ensembl archive data.
 GeneslatorDb("Rattus norvegicus")
-last <- function(x){x[[length(x)]]}
-geneslator::mapIds(org.Rnorvegicus.db, keys=c("ENSRNOG00000003105",
-"ENSRNOG00000049505"), column="UNIPROT", keytype="ENSEMBL", 
-multiVals="list", search.archives=FALSE)
+last <- function(x) {
+  x[[length(x)]]
+}
+geneslator::mapIds(org.Rnorvegicus.db,
+  keys = c(
+    "ENSRNOG00000003105",
+    "ENSRNOG00000049505"
+  ), column = "UNIPROT", keytype = "ENSEMBL",
+  multiVals = "list", search.archives = FALSE
+)
 
 # Map gene symbols to reactome pathways in zebrafish.
 # Return a CharacterList object with all possible mappings
 GeneslatorDb("Danio rerio")
-geneslator::mapIds(org.Drerio.db, keys=c("hoxc8a","samhd1"), 
-column="REACTOMEPATH", keytype="SYMBOL", multiVals="CharacterList")
+geneslator::mapIds(org.Drerio.db,
+  keys = c("hoxc8a", "samhd1"),
+  column = "REACTOMEPATH", keytype = "SYMBOL", multiVals = "CharacterList"
+)
 
 }
 \seealso{
