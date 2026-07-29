@@ -5,6 +5,9 @@
 # Crea un ambiente privato per il pacchetto
 .geneslator_cache <- new.env(parent = emptyenv())
 
+#' @importMethodsFrom methods show
+NULL
+
 #' @title Available database versions in geneslator
 #'
 #' @description
