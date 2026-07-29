@@ -119,9 +119,11 @@ NULL
         stop("Incomplete download of annotation db file")
       }
       #Clean old versions before adding new file
-      existing <- BiocFileCache::bfcquery(bfc, paste0(db.name, ".*_latest"), field = "rname")
-      if (nrow(existing) > 0) {
-        BiocFileCache::bfcremove(bfc, existing$rid)
+      if(is.latest){
+        existing <- BiocFileCache::bfcquery(bfc, paste0(db.name, ".*_latest"), field = "rname")
+        if (nrow(existing) > 0) {
+          BiocFileCache::bfcremove(bfc, existing$rid)
+        }
       }
       #Add file to BiocFileCache
       db.file <- BiocFileCache::bfcadd(bfc, rname = cache.name, fpath = temp.file, action = "copy")
