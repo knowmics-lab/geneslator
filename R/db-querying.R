@@ -928,3 +928,14 @@ setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
     )
   }
 }
+
+#' Show method for GeneslatorDb
+#' @param object A \code{GeneslatorDb} object.
+#' @return Invisibly returns \code{NULL}. Called for its side effect of 
+#' printing a summary of the object to the console.
+#' @exportMethod show
+setMethod("show", "GeneslatorDb", function(object) {
+  cat("GeneslatorDb object\n")
+  cat("Organism:", AnnotationDbi::species(object@db), "\n")
+  cat("Columns:", paste(AnnotationDbi::columns(object@db), collapse = ", "), "\n")
+})

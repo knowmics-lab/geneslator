@@ -77,8 +77,9 @@ increase to include more model organisms.
 # Installation
 
 ```{r installation, eval=FALSE}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!require("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
 BiocManager::install("geneslator")
 ```
 
