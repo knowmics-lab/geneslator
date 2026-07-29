@@ -18,12 +18,12 @@ NULL
 #' @noRd
 .loadAnnotationDb <- function(db.name, remote.version, remote.md5, doi, is.latest) {
   bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
-  cache.name <- if (is.latest) {
-    paste0(db.name, "_", remote.version,"_latest")
+  hits <- if (is.latest) {
+    BiocFileCache::bfcquery(bfc, paste0(db.name, ".*_latest"), field = "rname")
   } else {
-    paste0(db.name, "_", remote.version)
+    BiocFileCache::bfcquery(bfc, paste0(db.name, "_", remote.version), 
+                            field = "rname", exact = TRUE)
   }
-  hits <- BiocFileCache::bfcquery(bfc, cache.name, field = "rname", exact = TRUE)
   if (nrow(hits) > 0) {
     if (is.latest) {
       local.version <- hits$rname
@@ -70,7 +70,12 @@ NULL
     .downloadAnnotationDb(bfc, db.name, remote.version, remote.md5, doi, is.latest)
   }
   # Retrieve path from cache
-  hits <- BiocFileCache::bfcquery(bfc, cache.name, field = "rname", exact = TRUE)
+  hits <- if (is.latest) {
+    BiocFileCache::bfcquery(bfc, paste0(db.name, ".*_latest"), field = "rname")
+  } else {
+    BiocFileCache::bfcquery(bfc, paste0(db.name, "_", remote.version), 
+                            field = "rname", exact = TRUE)
+  }
   if (nrow(hits) == 0) {
     stop("Database file not found in cache after download.")
   }
@@ -113,8 +118,8 @@ NULL
         file.remove(temp.file)
         stop("Incomplete download of annotation db file")
       }
-      #Clean cache before adding new file
-      existing <- BiocFileCache::bfcquery(bfc, cache.name, field = "rname", exact = TRUE)
+      #Clean old versions before adding new file
+      existing <- BiocFileCache::bfcquery(bfc, paste0(db.name, ".*_latest"), field = "rname")
       if (nrow(existing) > 0) {
         BiocFileCache::bfcremove(bfc, existing$rid)
       }
