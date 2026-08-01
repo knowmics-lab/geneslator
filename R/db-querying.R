@@ -6,6 +6,8 @@
 .geneslator_cache <- new.env(parent = emptyenv())
 
 #' @importMethodsFrom methods show
+#' @importFrom KEGGREST keggConv keggLink keggList
+#' @importFrom stats setNames
 NULL
 
 #' @title Available database versions in geneslator
@@ -335,16 +337,12 @@ setClass("GeneslatorDb", slots = list(db = "OrgDb"))
 #'
 #' @importMethodsFrom AnnotationDbi select
 #' @export
-setMethod(
-  "select", signature(x = "GeneslatorDb"),
-  function(
-    x, keys, columns, keytype, search.aliases = TRUE,
-    search.archives = TRUE, orthologs.mapping = "multiple", ...
-  ) {
+setMethod("select", signature(x = "GeneslatorDb"),
+function(x, keys, columns, keytype, search.aliases = TRUE,search.archives = TRUE, orthologs.mapping = "multiple", ...) {
     # Remove keytype and duplicated columns from list of target columns
     columns <- unique(columns[columns != keytype])
     # Group columns according to related information in the DB table
-    col.groups <- .group_db_columns(columns, search.archives)
+    col.groups <- .group_db_columns(columns, search.archives, keytype)
     # Set all needed keytypes for the search
     keytype.set <- keytype
     if (keytype %in% c("ENTREZID", "ENSEMBL") && search.archives) {
@@ -358,16 +356,75 @@ setMethod(
     for (j in seq_len(length(col.groups))) {
       for (i in seq_len(length(keytype.set))) {
         # Solve select query using AnnotationDbi
-        query.res <- .solve_query_select(
-          x@db, as.character(keys),
-          col.groups[[j]], keytype.set[i], orthologs.mapping
-        )
-        # Differentiate column names if aliases or old ids are used to search
-        colnames(query.res)[colnames(query.res) != keytype.set[i]] <- paste0(
-          colnames(query.res)[colnames(query.res) != keytype.set[i]],
-          " ", LETTERS[i]
-        )
-        colnames(query.res)[colnames(query.res) == keytype.set[i]] <- keytype
+        if(keytype.set[i]=="KEGGPATH"){
+          #Get entrez gene IDs and pathway name if requested
+          if("ENTREZID" %in% col.groups[[j]]){
+            query.res <- .get.pathway.genes(as.character(keys),"ENTREZID")
+          } else if("KEGGPATHNAME" %in% col.groups[[j]]){
+            query.res <- .get.pathway.genes(as.character(keys),"KEGGPATHNAME")
+          } else {
+            query.res.entrez <- .get.pathway.genes(as.character(keys),"ENTREZID")
+            list.keys.to.search <- query.res.entrez[!is.na(query.res.entrez$ENTREZID),"ENTREZID"]
+            if(length(list.keys.to.search)>0){
+              query.res <- .solve_query_select(
+                x@db, list.keys.to.search,
+                col.groups[[j]], "ENTREZID", orthologs.mapping)
+              query.res <- merge(query.res.entrez,query.res)
+              query.res <- unique(query.res)
+            } else {
+              query.res <- data.frame(matrix(nrow = length(keys), ncol = length(col.groups[[j]]) + 1))
+              colnames(query.res) <- c(keytype.set[i], col.groups[[j]])
+              query.res[[keytype.set[i]]] <- keys
+            }
+          }
+        } else if("KEGGPATH" %in% col.groups[[j]] || "KEGGPATHNAME" %in% col.groups[[j]]){
+          if(keytype.set[i]=="ENTREZID"){
+            query.res <- .get.genes.pathways(as.character(keys),col.groups[[j]])
+          } else {
+            #Retrieve entrez IDs for pathway search
+            entrez.keytpes <- "ENTREZID"
+            fetch.old.entrez <- search.archives && keytype.set[i] != "ENTREZIDOLD"
+            if(fetch.old.entrez){
+              entrez.keytpes <- c(entrez.keytpes,"ENTREZIDOLD")
+            }
+            query.res.entrez <- .solve_query_select(
+              x@db, as.character(keys),
+              entrez.keytpes, keytype.set[i], orthologs.mapping
+            )
+            if(fetch.old.entrez){
+              query.res.entrez$ENTREZID <- ifelse(is.na(query.res.entrez$ENTREZID),query.res.entrez$ENTREZIDOLD,query.res.entrez$ENTREZID)
+              query.res.entrez$ENTREZIDOLD <- NULL
+            }
+            list.keys.to.search <- query.res.entrez[!is.na(query.res.entrez$ENTREZID),"ENTREZID"]
+            if(length(list.keys.to.search)>0){
+              query.res <- .get.genes.pathways(list.keys.to.search,col.groups[[j]])
+              query.res <- merge(query.res.entrez,query.res,all.x=TRUE)
+              query.res$ENTREZID <- NULL
+              query.res <- unique(query.res)
+            } else{
+              query.res <- data.frame(matrix(nrow = length(keys), ncol = length(col.groups[[j]]) + 1))
+              colnames(query.res) <- c(keytype.set[i], col.groups[[j]])
+              query.res[[keytype.set[i]]] <- keys
+            }
+          }
+          # Differentiate column names if aliases or old ids are used to search
+          colnames(query.res)[colnames(query.res) != keytype.set[i]] <- paste0(
+            colnames(query.res)[colnames(query.res) != keytype.set[i]],
+            " ", LETTERS[i]
+          )
+          colnames(query.res)[colnames(query.res) == keytype.set[i]] <- keytype
+        } else {
+          query.res <- .solve_query_select(
+            x@db, as.character(keys),
+            col.groups[[j]], keytype.set[i], orthologs.mapping
+          )
+          # Differentiate column names if aliases or old ids are used to search
+          colnames(query.res)[colnames(query.res) != keytype.set[i]] <- paste0(
+            colnames(query.res)[colnames(query.res) != keytype.set[i]],
+            " ", LETTERS[i]
+          )
+          colnames(query.res)[colnames(query.res) == keytype.set[i]] <- keytype
+        }
         # Integrate results
         key.res <- if (i == 1) query.res else merge(key.res, query.res)
       }
@@ -376,7 +433,7 @@ setMethod(
     }
     # Aggregate results
     for (col in columns) {
-      ref.cols <- colnames(final.res)[startsWith(colnames(final.res), col)]
+      ref.cols <- colnames(final.res)[colnames(final.res) == col | startsWith(colnames(final.res), paste0(col, " "))]
       final.res[[col]] <- apply(final.res, 1, function(row) {
         unique.info <- unname(c(unlist(row[ref.cols])))
         unique.info <- unique(unique.info[!is.na(unique.info)])
@@ -496,12 +553,8 @@ setMethod(
 #' @importFrom IRanges CharacterList
 #' @importMethodsFrom AnnotationDbi mapIds
 #' @export
-setMethod(
-  "mapIds", signature(x = "GeneslatorDb"),
-  function(
-    x, keys, column, keytype, search.aliases = TRUE, search.archives = TRUE,
-    ..., multiVals
-  ) {
+setMethod("mapIds", signature(x = "GeneslatorDb"),
+function(x, keys, column, keytype, search.aliases = TRUE, search.archives = TRUE,..., multiVals){
     # Set "multiVals" parameter if unspecified
     if (missing(multiVals)) {
       multiVals <- "first"
@@ -525,10 +578,17 @@ setMethod(
     # Map data keytype by keytype, for each column
     for (kt in keytype.set) {
       for (col in column.set) {
-        query.res <- .solve_query_mapIds(
-          x@db, as.character(keys), col,
-          kt, multiVals
-        )
+        if (kt == "KEGGPATH" || col %in% c("KEGGPATH", "KEGGPATHNAME")) {
+          query.res <- .solve_query_mapIds_kegg(
+            x@db, as.character(keys), col,
+            kt, multiVals
+          )
+        } else {
+          query.res <- .solve_query_mapIds(
+            x@db, as.character(keys), col,
+            kt, multiVals
+          )
+        }
         final.res <- ifelse(is.na(final.res), query.res, final.res)
       }
     }
@@ -625,14 +685,11 @@ setMethod(
 #' @importMethodsFrom AnnotationDbi keytypes
 #' @export
 setMethod("keytypes", signature(x = "GeneslatorDb"), function(x) {
-  # Ottieni i keytypes dal database base
-  # all.keys <- getMethod("keytypes", "OrgDb",
-  # where = getNamespace("AnnotationDbi"))(x@db)
   all.keys <- AnnotationDbi::keytypes(x@db)
   valid.keys <- all.keys[all.keys != "GID" & !endsWith(all.keys, "NAME") &
     !startsWith(all.keys, "GO")]
-  valid.keys <- c(valid.keys, "GENENAME", "GO")
-  valid.keys <- sort(valid.keys)
+  valid.keys <- c(valid.keys, "GENENAME", "GO", "KEGGPATH")
+  valid.keys <- unique(sort(valid.keys))
   return(valid.keys)
 })
 
@@ -642,11 +699,10 @@ setMethod("keytypes", signature(x = "GeneslatorDb"), function(x) {
 #' @importMethodsFrom AnnotationDbi columns
 #' @export
 setMethod("columns", signature(x = "GeneslatorDb"), function(x) {
-  # all.columns <- getMethod("keytypes", "OrgDb",
-  # where = getNamespace("AnnotationDbi"))(x@db)
   all.columns <- AnnotationDbi::keytypes(x@db)
   valid.columns <- all.columns[all.columns != "GID"]
-  valid.columns <- sort(valid.columns)
+  valid.columns <- c(valid.columns,"KEGGPATH","KEGGPATHNAME")
+  valid.columns <- unique(sort(valid.columns))
   return(valid.columns)
 })
 
@@ -682,8 +738,6 @@ setMethod("columns", signature(x = "GeneslatorDb"), function(x) {
 #' @importMethodsFrom AnnotationDbi keys
 #' @export
 setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
-  # key.values <- getMethod("keys", "OrgDb",
-  # where = getNamespace("AnnotationDbi"))(x@db, keytype)
   key.values <- AnnotationDbi::keys(x@db, keytype)
   key.values <- sort(unique(key.values))
   return(key.values)
@@ -693,7 +747,7 @@ setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
 #' Group columns in annotation db for select() function
 #' @keywords internal
 #' @noRd
-.group_db_columns <- function(columns, search.archives) {
+.group_db_columns <- function(columns, search.archives, keytype) {
   # Group columns according to related information in the DB table
   col.groups <- list()
   i <- 1
@@ -722,13 +776,41 @@ setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
     if (!col %in% cols.special) {
       col.groups[[i]] <- col
       i <- i + 1
-      if (col %in% c("ENTREZID", "ENSEMBL") && search.archives) {
+      if(keytype=="KEGGPATH" && col=="ENSEMBL" && search.archives){
+        col.groups[[i]] <- paste0(col, "OLD")
+        i <- i + 1
+      } else if (keytype!="KEGGPATH" && col %in% c("ENTREZID", "ENSEMBL") && search.archives){
         col.groups[[i]] <- paste0(col, "OLD")
         i <- i + 1
       }
     }
   }
   return(col.groups)
+}
+
+
+#' Apply multiVals dispatch logic to a raw keytype/column query result
+#' @keywords internal
+#' @noRd
+.dispatch_multiVals <- function(ans, keys, column, keytype, multiVals) {
+  if (is.function(multiVals)) {
+    query.res <- split(ans[[column]], ans[[keytype]])
+    query.res <- unlist(lapply(query.res, multiVals))
+  } else if (multiVals == "first") {
+    ans <- ans[!duplicated(ans[[keytype]]), ]
+    query.res <- ans[[column]]
+    names(query.res) <- ans[[keytype]]
+  } else if (multiVals == "list" || multiVals == "filter" ||
+             multiVals == "CharacterList") {
+    query.res <- split(ans[[column]], ans[[keytype]])[keys]
+  } else if (multiVals == "asNA") {
+    list.dup.keys <- unique(ans[duplicated(ans[[keytype]]), keytype])
+    ans[ans[[keytype]] %in% list.dup.keys, column] <- NA
+    ans <- unique(ans)
+    query.res <- ans[[column]]
+    names(query.res) <- ans[[keytype]]
+  }
+  return(query.res)
 }
 
 
@@ -749,34 +831,75 @@ setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
     }
   )
   # Process query results considering multiVals parameter
-  if (is.function(multiVals)) {
-    query.res <- split(ans[[column]], ans[[keytype]])
-    query.res <- unlist(lapply(query.res, multiVals))
-  } else if (multiVals == "first") {
-    ans <- ans[!duplicated(ans[[keytype]]), ]
-    query.res <- ans[[column]]
-    names(query.res) <- ans[[keytype]]
-  } else if (multiVals == "list" || multiVals == "filter" ||
-    multiVals == "CharacterList") {
-    query.res <- split(ans[[column]], ans[[keytype]])[keys]
-  } else if (multiVals == "asNA") {
-    list.dup.keys <- unique(ans[duplicated(ans[[keytype]]), keytype])
-    ans[ans[[keytype]] %in% list.dup.keys, column] <- NA
-    ans <- unique(ans)
-    query.res <- ans[[column]]
-    names(query.res) <- ans[[keytype]]
+  .dispatch_multiVals(ans, keys, column, keytype, multiVals)
+}
+
+
+#' Solve mapIds query for KEGG pathway <-> gene conversions
+#' @keywords internal
+#' @noRd
+.solve_query_mapIds_kegg <- function(db, keys, column, keytype, multiVals) {
+  keys.chr <- as.character(keys)
+  if (keytype == "KEGGPATH") {
+    kegg.pathway.ids <- ifelse(grepl("^path:", keys.chr), keys.chr, paste0("path:", keys.chr))
+    norm.to.orig <- setNames(keys.chr, kegg.pathway.ids)
+    if (column %in% c("ENTREZID", "KEGGPATHNAME")) {
+      # Pathway -> Entrez IDs, or pathway -> pathway name
+      ans <- .get.pathway.genes(keys.chr, column)
+      # Restore KEGGPATH to original user values
+      ans$KEGGPATH <- unname(norm.to.orig[ans$KEGGPATH])
+      return(.dispatch_multiVals(ans, keys.chr, column, "KEGGPATH", multiVals))
+    }
+    # Pathway -> other column. Map done through ENTREZ IDs
+    pathway.entrez.df <- .get.pathway.genes(keys.chr, "ENTREZID")
+    # Restore KEGGPATH to original user values
+    pathway.entrez.df$KEGGPATH <- unname(norm.to.orig[pathway.entrez.df$KEGGPATH])
+    valid.entrez <- unique(pathway.entrez.df$ENTREZID[!is.na(pathway.entrez.df$ENTREZID)])
+    if (length(valid.entrez) == 0) {
+      ans <- data.frame(KEGGPATH = keys.chr)
+      ans[[column]] <- NA
+    } else {
+      col.df <- .solve_query_select(db, valid.entrez, column, "ENTREZID", "multiple")
+      ans <- merge(pathway.entrez.df, col.df, by = "ENTREZID", all.x = TRUE)
+      ans <- ans[, c("KEGGPATH", column)]
+    }
+    return(.dispatch_multiVals(ans, keys.chr, column, "KEGGPATH", multiVals))
   }
-  return(query.res)
+  if (keytype == "ENTREZID") {
+    #ENTREZ IDs -> KEGGPATH or KEGGPATHNAME
+    ans <- .get.genes.pathways(keys.chr, column)
+    colnames(ans)[colnames(ans) == "ENTREZID"] <- keytype
+    return(.dispatch_multiVals(ans, keys.chr, column, keytype, multiVals))
+  }
+  # Other keytype -> Pathway. Map done through ENTREZ IDs
+  entrez.map <- .solve_query_mapIds(db, keys.chr, "ENTREZID", keytype, "list")
+  key.entrez.df <- do.call(rbind, lapply(keys.chr, function(k) {
+    ids <- entrez.map[[k]]
+    ids <- ids[!is.na(ids)]
+    if (length(ids) == 0) {
+      data.frame(KEY = k, ENTREZID = NA_character_)
+    } else {
+      data.frame(KEY = k, ENTREZID = ids)
+    }
+  }))
+  valid.entrez <- unique(key.entrez.df$ENTREZID[!is.na(key.entrez.df$ENTREZID)])
+  if (length(valid.entrez) == 0) {
+    ans <- data.frame(KEY = keys.chr)
+    ans[[column]] <- NA
+  } else {
+    pathway.df <- .get.genes.pathways(valid.entrez, column)
+    ans <- merge(key.entrez.df, pathway.df, by = "ENTREZID", all.x = TRUE)
+    ans <- ans[, c("KEY", column)]
+  }
+  colnames(ans)[colnames(ans) == "KEY"] <- keytype
+  return(.dispatch_multiVals(ans, keys.chr, column, keytype, multiVals))
 }
 
 
 #' Solve select query using AnnotationDbi
 #' @keywords internal
 #' @noRd
-.solve_query_select <- function(
-  db, keys, col.group, keytype,
-  orthologs.mapping
-) {
+.solve_query_select <- function(db,keys,col.group,keytype,orthologs.mapping){
   # Run query with specified set of related columns and keytpe
   query.res <- tryCatch(
     {
@@ -810,10 +933,7 @@ setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
 #' Check if warning user for archives or aliases used in select query
 #' @keywords internal
 #' @noRd
-.check_warnings <- function(
-  final.res, columns, keytype, search.aliases,
-  search.archives
-) {
+.check_warnings <- function(final.res,columns,keytype,search.aliases,search.archives) {
   # If search.aliases=T, check if some ids are mapped with ALIAS and not SYMBOL
   # If search.archives=T, check if some ids have been mapped using archives
   for (col in columns) {
@@ -932,6 +1052,7 @@ setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
   }
 }
 
+
 #' Show method for GeneslatorDb
 #' @param object A \code{GeneslatorDb} object.
 #' @return Invisibly returns \code{NULL}. Called for its side effect of 
@@ -942,3 +1063,159 @@ setMethod("show", "GeneslatorDb", function(object) {
   cat("Organism:", AnnotationDbi::species(object@db), "\n")
   cat("Columns:", paste(AnnotationDbi::columns(object@db), collapse = ", "), "\n")
 })
+
+
+#' Cache map KEGG pathway IDs <-> KEGG pathway names for an organism (if needed) and return list
+#' @keywords internal
+#' @noRd
+.get.kegg.pathway.list <- function(organism) {
+  cache.key <- paste0("kegg_pathway_", organism)
+  if (!exists(cache.key, envir = .geneslator_cache)) {
+    assign(cache.key, keggList("pathway", organism), envir = .geneslator_cache)
+  }
+  get(cache.key, envir = .geneslator_cache)
+}
+
+
+#' Cache map NCBI IDs <-> KEGG Gene IDs (if needed) and return map
+#' @keywords internal
+#' @noRd
+.get.kegg.entrez.map <- function(organism) {
+  cache.key <- paste0("kegg_entrez_", organism)
+  if (!exists(cache.key, envir = .geneslator_cache)) {
+    assign(cache.key, keggConv("ncbi-geneid", organism), envir = .geneslator_cache)
+  }
+  get(cache.key, envir = .geneslator_cache)
+}
+
+
+#' Get pathway names or pathway IDs associated to a list of genes (denoted by Entrez IDs)
+#' @keywords internal
+#' @noRd
+.get.genes.pathways <- function(entrez.ids, columns) {
+  
+  #Discover organism using only the first entrez ID (small, safe call)
+  first.conv <- keggConv("genes", paste0("ncbi-geneid:", entrez.ids[1]))
+  if (length(first.conv) == 0) {
+    final.df <- data.frame(ENTREZID=as.character(entrez.ids))
+    if("KEGGPATH" %in% columns){
+      final.df$KEGGPATH <- NA
+    }
+    if("KEGGPATHNAME" %in% columns){
+      final.df$KEGGPATHNAME <- NA
+    }
+    return(final.df)
+  }
+  organism <- sub(":.*", "", unname(first.conv)[1])
+  
+  #Get full organism ncbi-geneid <-> KEGG gene ID map (cached, one download per organism)
+  all.conv <- .get.kegg.entrez.map(organism)
+  kegg.from.ncbi <- setNames(names(all.conv), sub("^ncbi-geneid:", "", unname(all.conv)))
+  
+  #Look up locally (no API call) the KEGG gene ID for every requested entrez ID
+  kegg.gene.ids <- unname(kegg.from.ncbi[as.character(entrez.ids)])
+  valid <- !is.na(kegg.gene.ids)
+  
+  if(!any(valid)){
+    final.df <- data.frame(ENTREZID=as.character(entrez.ids))
+    if("KEGGPATH" %in% columns){
+      final.df$KEGGPATH <- NA
+    }
+    if("KEGGPATHNAME" %in% columns){
+      final.df$KEGGPATHNAME <- NA
+    }
+    return(final.df)
+  }
+  
+  ncbi.from.kegg <- setNames(as.character(entrez.ids)[valid], kegg.gene.ids[valid])
+  
+  #Get pathway IDs from KEGG gene IDs (always needed, even if KEGGPATH isn't in the output)
+  links <- keggLink("pathway", kegg.gene.ids[valid])
+  if (length(links) == 0) {
+    final.df <- data.frame(ENTREZID=as.character(entrez.ids))
+    if("KEGGPATH" %in% columns){
+      final.df$KEGGPATH <- NA
+    }
+    if("KEGGPATHNAME" %in% columns){
+      final.df$KEGGPATHNAME <- NA
+    }
+    return(final.df)
+  }
+  
+  final.df <- data.frame(ENTREZID = unname(ncbi.from.kegg[names(links)]))
+  
+  #Include KEGGPATH column only if requested
+  if("KEGGPATH" %in% columns){
+    final.df$KEGGPATH <- links
+  }
+  
+  #Get pathway names (if requested)
+  if("KEGGPATHNAME" %in% columns){
+    clean.pathway.ids <- sub("^path:", "", links)
+    all.pathways <- .get.kegg.pathway.list(organism)
+    pathway.names <- unname(all.pathways[clean.pathway.ids])
+    pathway.names <- sub(" - [^-]+$", "", pathway.names)
+    final.df$KEGGPATHNAME <- pathway.names
+  }
+  
+  #Add NA rows for genes with no associated pathways
+  missing.ids <- setdiff(as.character(entrez.ids), final.df$ENTREZID)
+  if(length(missing.ids) > 0){
+    df.missing <- data.frame(ENTREZID = missing.ids)
+    if("KEGGPATH" %in% columns){
+      df.missing$KEGGPATH <- NA
+    }
+    if("KEGGPATHNAME" %in% columns){
+      df.missing$KEGGPATHNAME <- NA
+    }
+    final.df <- rbind(final.df, df.missing)
+  }
+  
+  return(final.df)
+}
+
+
+#' Get genes (denoted by Entrez IDs) or pathway names associated to a list of pathway IDs
+#' @keywords internal
+#' @noRd
+.get.pathway.genes <- function(pathway.ids, columns) {
+  
+  #Ensure pathway IDs have the "path:" prefix required by keggLink
+  kegg.pathway.ids <- ifelse(grepl("^path:", pathway.ids), pathway.ids, paste0("path:", pathway.ids))
+  
+  #Retrieve KEGG organism code directly from the pathway ID (e.g. "hsa" from "path:hsa04115")
+  organism <- sub("^path:([a-zA-Z]+)[0-9]+$", "\\1", kegg.pathway.ids[1])
+  
+  #KEGGPATHNAME requested -> no need to fetch genes, just look up the pathway name
+  if("KEGGPATHNAME" %in% columns){
+    clean.pathway.ids <- sub("^path:", "", kegg.pathway.ids)
+    all.pathways <- .get.kegg.pathway.list(organism)
+    pathway.names <- unname(all.pathways[clean.pathway.ids])
+    pathway.names <- sub(" - [^-]+$", "", pathway.names)
+    return(data.frame(KEGGPATH = kegg.pathway.ids, KEGGPATHNAME = pathway.names))
+  }
+  
+  #ENTREZID requested -> get KEGG gene IDs from pathway IDs and convert them
+  links <- keggLink(organism, kegg.pathway.ids)
+  if (length(links) == 0) {
+    return(data.frame(KEGGPATH = kegg.pathway.ids, ENTREZID = NA))
+  }
+  kegg.gene.ids <- unname(links)
+  
+  #Convert KEGG gene IDs into Entrez IDs using the full organism mapping (cached)
+  all.conv <- .get.kegg.entrez.map(organism)
+  entrez.from.kegg <- setNames(sub("^ncbi-geneid:", "", unname(all.conv)), names(all.conv))
+  
+  final.df <- data.frame(
+    KEGGPATH = names(links),
+    ENTREZID = unname(entrez.from.kegg[kegg.gene.ids])
+  )
+  
+  #Add NA rows for pathways with no associated genes
+  missing.ids <- setdiff(kegg.pathway.ids, final.df$KEGGPATH)
+  if(length(missing.ids) > 0){
+    final.df <- rbind(final.df, data.frame(KEGGPATH = missing.ids, ENTREZID = NA))
+  }
+  
+  return(final.df)
+}
