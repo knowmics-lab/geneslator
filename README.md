@@ -55,12 +55,7 @@ Annotation databases resulting from the integration of all gene are built as SQL
 # Devel version (R >= 4.6)
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install("geneslator", version = "devel")
-
-### GitHub (alternative)
-if (!require("devtools", quietly = TRUE))
-    install.packages("devtools")
-devtools::install_github("knowmics-lab/geneslator")
+BiocManager::install("knowmics-lab/geneslator")
 ```
 
 ## Usage examples
@@ -99,6 +94,18 @@ select(org.Hsapiens.db, keys = c("7157", "672"), columns = c("SYMBOL", "GO", "GO
 # Get KEGG pathways for a set of genes
 select(org.Hsapiens.db, keys = c("TP53", "BRCA1"), columns = c("KEGGPATH", "KEGGPATHNAME"),
        keytype = "SYMBOL")
+```
+
+## Usage with conflicting packages
+
+Since some **geneslator** functions share their name with functions from widely used packages (e.g., `select()` from `dplyr`), 
+users are advised to use the explicit `geneslator::` prefix when both packages are loaded in the same session, 
+in order to avoid function masking and unexpected behavior.
+
+```r
+# Get KEGG pathway IDs and names for a list of genes, starting from Ensembl IDs
+geneslator::select(org.Hsapiens.db, keys = c("ENSG00000141510", "ENSG00000012048", "ENSG00000139618"),
+       columns = c("KEGGPATH", "KEGGPATHNAME"), keytype = "ENSEMBL")
 ```
 
 ## Versioning management

@@ -339,6 +339,10 @@ setClass("GeneslatorDb", slots = list(db = "OrgDb"))
 #' @export
 setMethod("select", signature(x = "GeneslatorDb"),
 function(x, keys, columns, keytype, search.aliases = TRUE,search.archives = TRUE, orthologs.mapping = "multiple", ...) {
+    #Check correct format for input keys if SYMBOL or ALIAS
+    if(keytype %in% c("SYMBOL","ALIAS")){
+      .check.gene.symbols(keys)
+    }
     # Remove keytype and duplicated columns from list of target columns
     columns <- unique(columns[columns != keytype])
     # Group columns according to related information in the DB table
@@ -558,6 +562,10 @@ function(x, keys, column, keytype, search.aliases = TRUE, search.archives = TRUE
     # Set "multiVals" parameter if unspecified
     if (missing(multiVals)) {
       multiVals <- "first"
+    }
+    #Check correct format for input keys if SYMBOL or ALIAS
+    if(keytype %in% c("SYMBOL","ALIAS")){
+      .check.gene.symbols(keys)
     }
     # Set keytype and columns for the search
     keytype.set <- keytype
@@ -1218,4 +1226,66 @@ setMethod("show", "GeneslatorDb", function(object) {
   }
   
   return(final.df)
+}
+
+
+#' Screen gene symbols for spreadsheet-autoformatting corruption, based on
+#' the four detection rules used by Ziemann et al. 2016 (PMID 27552985). 
+#' This function flags values whose pattern is consistent with
+#' having been silently reformatted by Excel (or similar spreadsheet
+#' software) into a date or a floating-point number, and raises a
+#' warning listing exactly which elements are suspect.
+#' Detection rules: a slash-separated date (e.g. 01/03/2016), a dash-separated 
+#' all-numeric date (e.g. 01-03-16), a day-month value (e.g. 1-Mar, 12-Sep), 
+#' scientific notation (e.g. 2.31E+13, typical of RIKEN clone IDs or other 
+#' long numeric-looking identifiers). If warn=TRUE and at least one element is
+#' flagged, a warning is raised summarising the problem.
+#' Invisibly, it returns a data.frame with one row per input element with the 
+#' original input, a boolean denoting if it was flagged and which rule matched. 
+#' Example: check_gene_symbols(c("BRCA1","1-Mar","TP53","12-Sep","2.31E+13"))
+#' @keywords internal
+#' @noRd
+.check.gene.symbols <- function(gene.symbols, warn = TRUE) {
+  
+  ## ---- the four detection regexes, translated from the awk originals ----
+  re.date.slash <- "^\\s*[0-9]{1,2}/[0-9]{1,2}/[0-9]{2,4}\\s*$"
+  re.date.dash  <- "^\\s*[0-9]{1,2}-[0-9]{1,2}-[0-9]{2,4}\\s*$"
+  re.day.month  <- "^\\s*[0-9]{1,2}-[A-Za-z]{3}(-[0-9]{2,4})?\\s*$"
+  re.sci        <- "^\\s*[0-9]\\.[0-9]{2}[Ee]\\+[0-9]{2}\\s*$"
+  
+  gene.symbols <- as.character(gene.symbols)
+  n.symbols <- length(gene.symbols)
+  rule <- rep(NA_character_, n.symbols)
+  is.valid <- !is.na(gene.symbols) & nzchar(trimws(gene.symbols))
+  rule[is.valid & grepl(re.day.month, gene.symbols, perl = TRUE)] <- "day_month"
+  rule[is.valid & is.na(rule) & grepl(re.date.slash, gene.symbols, perl = TRUE)] <- "date_slash"
+  rule[is.valid & is.na(rule) & grepl(re.date.dash, gene.symbols, perl = TRUE)] <- "date_dash"
+  rule[is.valid & is.na(rule) & grepl(re.sci, gene.symbols, perl = TRUE)] <- "sci_notation"
+  flagged <- !is.na(rule)
+  result <- data.frame(
+    value   = gene.symbols,
+    flagged = flagged,
+    rule    = rule,
+    stringsAsFactors = FALSE
+  )
+  if (warn && any(flagged)) {
+    n.flagged <- sum(flagged)
+    rule.tbl  <- table(rule[flagged])
+    rule.summary <- paste(sprintf("%s: %d", names(rule.tbl), rule.tbl), collapse = ", ")
+    idx.preview <- which(flagged)[seq_len(min(10, n.flagged))]
+    preview <- paste(sprintf("[%d] '%s' (%s)", idx.preview,
+                             gene.symbols[idx.preview], rule[idx.preview]),
+                     collapse = "; ")
+    if (n.flagged > 10) preview <- paste0(preview, "; ... (", n.flagged - 10, " more)")
+    warning(
+      sprintf(
+        "%d of %d value(s) look like they were reformatted by Excel/spreadsheet autocorrect (%s).
+These may be corrupted gene symbols (e.g. MARCH1/SEPT12/DEC1 -> day-month, or long numeric IDs -> scientific notation).
+Flagged: %s",
+        n.flagged, n.symbols, rule.summary, preview
+      ),
+      call. = FALSE
+    )
+  }
+  invisible(result)
 }
