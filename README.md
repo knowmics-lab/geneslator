@@ -17,7 +17,26 @@ Four different types of data about a gene are integrated: annotations from gener
 
 ![Geneslator's workflow](man/figures/GeneslatorWorkflow.png)
 
-Currently, annotation databases have been built for 14 different organisms, including Human (*Homo sapiens*), Mouse (*Mus musculus*), Rat (*Rattus norvegicus*), Fly (*Drosophila melanogaster*), Zebrafish (*Danio rerio*), Yeast (*Saccharomyces cerevisiae*), Worm (*Caenorhabditis elegans*), Arabidopsis (*Arabidopsis thaliana*) and 6 more plant species. More organisms will be included in future releases of **geneslator**.
+## Supported organisms
+
+Currently, annotation databases have been built for the following organisms:
+
+- *Homo sapiens* (Human)
+- *Mus musculus* (Mouse)
+- *Rattus norvegicus* (Rat)
+- *Danio rerio* (Zebrafish)
+- *Drosophila melanogaster* (Fly)
+- *Caenorhabditis elegans* (Worm)
+- *Saccharomyces cerevisiae* (Yeast)
+- *Arabidopsis thaliana* (Arabidopsis)
+- *Brassica oleracea* (Cabbage)
+- *Brassica napus* (Rapeseed)
+- *Solanum lycopersicum* (Tomato)
+- *Vitis vinifera* (Grapevine)
+- *Lupinus angustifolius* (Blue lupin)
+- *Phaseolus vulgaris* (Common bean)
+
+More organisms will be included in future releases of **geneslator**.
 
 ## Data sources
 
