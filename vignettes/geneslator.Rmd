@@ -121,7 +121,7 @@ A complete list of all available release versions can be obtained with
 `availableVersions()`.
 
 ```{r available-versions, eval=TRUE}
-# Import human db again. Now cache data will be used to import db
+# List available versions of geneslator annotation databases
 availableVersions()
 ```
 
