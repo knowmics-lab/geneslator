@@ -1,12 +1,15 @@
 Package: geneslator
 Title: Geneslator, a tool for accurate gene name conversion
-Version: 0.99.10
+Version: 0.99.11
 Description: Geneslator is a comprehensive R package that performs gene identifier conversion and ortholog mapping. 
     The tool integrates multiple cross-organism databases (NCBI, Ensembl, UniProt, GO, KEGG, Reactome, Wikipathways) and organism-specific resources within a single, coherent framework. 
-    Geneslator currently supports the following organisms: human, mouse, rat, yeast, worm, fly, zebrafish and arabidopsis.
+    Geneslator supports many organisms, including human, mouse, rat, yeast, worm, fly, zebrafish and arabidopsis.
 Authors@R: c(person("Giovanni", "Micale", role=c("aut", "cre"), email="giovanni.micale@unict.it", comment=c(ORCID = "0000-0002-4953-026X")),
     person("Giulia", "Cavallaro", role="aut", email="giuliacava96@gmail.com", comment=c(ORCID = "0009-0000-1212-8368")),
-    person("Grete Francesca", "Privitera", role="aut", email="grete.privitera@unict.it", comment=c(ORCID = "0000-0003-1807-4780")))
+    person("Grete Francesca", "Privitera", role="aut", email="grete.privitera@unict.it", comment=c(ORCID = "0000-0003-1807-4780")),
+    person("Alfredo", "Pulvirenti", role="aut", email="alfredo.pulvirenti@unict.it", comment=c(ORCID = "0000-0002-9764-0295")),
+    person("Stefano", "Forte", role="aut", email="stefano.forte@grupposamed.com", comment=c(ORCID = "0000-0001-5746-7451")),
+    person("Salvatore", "Alaimo", role="aut", email="salvatore.alaimo@unict.it", comment=c(ORCID = "0000-0003-4825-7617")))
 License: Artistic-2.0
 Encoding: UTF-8
 URL: https://github.com/knowmics-lab/geneslator
