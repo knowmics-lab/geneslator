@@ -19,7 +19,7 @@ Four different types of data about a gene are integrated: annotations from gener
 
 ## Supported organisms
 
-Currently, annotation databases have been built for the following organisms:
+Currently, annotation databases have been built for the following 19 organisms:
 
 - *Homo sapiens* (Human)
 - *Mus musculus* (Mouse)
@@ -35,6 +35,11 @@ Currently, annotation databases have been built for the following organisms:
 - *Vitis vinifera* (Grapevine)
 - *Lupinus angustifolius* (Blue lupin)
 - *Phaseolus vulgaris* (Common bean)
+- *Macaca mulatta* (Macaque)
+- *Apis mellifera* (Honey Bee)
+- *Xenopus laevis* (African Clawed Frog)
+- *Oryza sativa* (Rice)
+- *Zea mays* (Maize)
 
 More organisms will be included in future releases of **geneslator**.
 

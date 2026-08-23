@@ -1,6 +1,6 @@
 Package: geneslator
 Title: Geneslator, a tool for accurate gene name conversion
-Version: 0.99.11
+Version: 0.99.12
 Description: Geneslator is a comprehensive R package that performs gene identifier conversion and ortholog mapping. 
     The tool integrates multiple cross-organism databases (NCBI, Ensembl, UniProt, GO, KEGG, Reactome, Wikipathways) and organism-specific resources within a single, coherent framework. 
     Geneslator supports many organisms, including human, mouse, rat, yeast, worm, fly, zebrafish and arabidopsis.
