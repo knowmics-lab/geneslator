@@ -306,14 +306,14 @@ setClass("GeneslatorDb", slots = list(db = "OrgDb"))
 #'   columns = "ENTREZID", keytype = "SYMBOL"
 #' )
 #'
-#' # Lookup KEGG pathway ids and their relative full names for a given list
+#' # Lookup REACTOME pathway ids and their relative full names for a given list
 #' # of ensembl gene ids in worm
 #' GeneslatorDb("Caenorhabditis elegans")
 #' geneslator::select(org.Celegans.db,
 #'   keys = c(
 #'     "ENSDARG00000013522",
 #'     "ENSDARG00000103044"
-#'   ), columns = c("KEGGPATH", "KEGGPATHNAME"),
+#'   ), columns = c("REACTOMEPATH", "REACTOMEPATHNAME"),
 #'   keytype = "ENSEMBL"
 #' )
 #'
