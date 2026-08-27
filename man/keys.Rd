@@ -29,9 +29,9 @@ column in the annotation database of a specific organism within the
 GeneslatorDb("Danio rerio")
 geneslator::keys(org.Drerio.db, keytype = "ENTREZID")
 
-# Get the list of all KEGG pathways present in rat annotation db
+# Get the list of all REACTOME pathways present in rat annotation db
 GeneslatorDb("Rattus norvegicus")
-geneslator::keys(org.Rnorvegicus.db, keytype = "KEGGPATH")
+geneslator::keys(org.Rnorvegicus.db, keytype = "REACTOMEPATH")
 
 }
 \seealso{

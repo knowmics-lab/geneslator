@@ -742,13 +742,20 @@ setMethod("columns", signature(x = "GeneslatorDb"), function(x) {
 #' GeneslatorDb("Danio rerio")
 #' geneslator::keys(org.Drerio.db, keytype = "ENTREZID")
 #'
-#' # Get the list of all KEGG pathways present in rat annotation db
+#' # Get the list of all REACTOME pathways present in rat annotation db
 #' GeneslatorDb("Rattus norvegicus")
-#' geneslator::keys(org.Rnorvegicus.db, keytype = "KEGGPATH")
+#' geneslator::keys(org.Rnorvegicus.db, keytype = "REACTOMEPATH")
 #'
 #' @importMethodsFrom AnnotationDbi keys
 #' @export
 setMethod("keys", signature(x = "GeneslatorDb"), function(x, keytype) {
+  valid.keytypes <- keytypes(x)
+  if(!keytype %in% valid.keytypes || keytype=="KEGGPATH"){
+    msg <- paste0(
+      "Invalid keytype. Please use the keytypes() method to see a listing of valid arguments."
+    )
+    stop(msg)
+  }
   key.values <- AnnotationDbi::keys(x@db, keytype)
   key.values <- sort(unique(key.values))
   return(key.values)
