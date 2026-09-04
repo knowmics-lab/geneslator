@@ -74,9 +74,13 @@ Annotation databases resulting from the integration of all gene are built as SQL
 
 ## Installation
 
+Currently, we recommend installing Geneslator from source code using `devtools`
+
 ```r
-### Bioconductor (recommended)
-# Devel version (R >= 4.6)
+### Using devtools
+devtools::install("knowmics-lab/geneslator")
+
+### Bioconductor (3.24 devel version, requires R >= 4.6)
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("knowmics-lab/geneslator")
