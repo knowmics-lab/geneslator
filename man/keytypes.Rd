@@ -33,47 +33,47 @@ can be used as input when querying \code{x}, i.e., all possible values of the
 can be used as output when querying \code{x}, i.e., all possible values of the
 \code{column} argument in \code{\link[=mapIds]{mapIds()}} and \code{\link[=select]{select()}} functions.
 
-The following is the complete list of columns defined in the annotation
+The following is a list of columns shared by all organisms in the annotation
 databases of \pkg{geneslator} package. Some of these columns may be missing
-in one or more organisms.\tabular{ll}{
+in one or more organisms, if no data is available for that organism.\tabular{ll}{
    Column \tab Description \cr
    \code{SYMBOL} \tab Official gene symbol \cr
    \code{ALIAS} \tab Aliases of a gene \cr
+   \code{LOCUS} \tab Locus tag of a gene \cr
    \code{GENETYPE} \tab Biological type of a gene (e.g. 'protein-coding', 'ncRNA') \cr
    \code{GENENAME} \tab Full name or description of a gene \cr
    \code{ENTREZID} \tab Gene ID in NCBI Gene \cr
    \code{ENSEMBL} \tab Gene ID in Ensembl \cr
-   \code{HGNC} \tab Gene ID in HUGO Gene Nomenclature Committee (Human only) \cr
-   \code{MGI} \tab Gene ID in Mouse Genome Informatics (Mouse only) \cr
-   \code{RGD} \tab Gene ID in Rat Genome Database (Rat only) \cr
-   \code{SGD} \tab Gene ID in Saccharomyces Genome Database (Yeast only) \cr
-   \code{WORMBASE} \tab Gene ID in WormBase database (Worm only) \cr
-   \code{FLYBASE} \tab Gene ID in FlyBase database (Fly only) \cr
-   \code{ZFIN} \tab Gene ID in Zebrafish Information Network (Zebrafish only) \cr
-   \code{TAIR} \tab Gene ID in The Arabidopsis Information Resource (Arabidopsis \cr
-   only) \tab  \cr
-   \code{UNIPROTKB} \tab Uniprot IDs of proteins associated to a gene \cr
+   \code{UNIPROT} \tab Uniprot IDs of proteins associated to a gene \cr
    \code{ENTREZIDOLD} \tab Archived IDs in NCBI Gene \cr
    \code{ENSEMBLOLD} \tab Archived IDs in Ensembl \cr
-   \code{ORTHOHUMAN} \tab Orthologs in Human (absent in Human and Arabidopsis) \cr
-   \code{ORTHOMOUSE} \tab Orthologs in Mouse (absent in Mouse and Arabidopsis) \cr
-   \code{ORTHORAT} \tab Orthologs in Rat (absent in Rat and Arabidopsis) \cr
-   \code{ORTHOYEAST} \tab Orthologs in Yeast (absent in Yeast and Arabidopsis) \cr
-   \code{ORTHOWORM} \tab Orthologs in Worm (absent in Worm and Arabidopsis) \cr
-   \code{ORTHOFLY} \tab Orthologs in Fly (absent in Fly and Arabidopsis) \cr
-   \code{ORTHOZEBRAFISH} \tab Orthologs in Zebrafish (absent in Zebrafish and \cr
-   Arabidopsis) \tab  \cr
+   \code{ORTHO[org]} \tab Orthologs in species \verb{[org]}, where \verb{[org]} is the upper-case common name of one of the organism present in \pkg{geneslator} \cr
    \code{GO} \tab IDs of Gene Ontology (GO) terms associated to a gene \cr
    \code{GONAME} \tab Names of GO terms associated to a gene \cr
    \code{GOEVIDENCE} \tab Evidence codes of GO terms associated to a gene \cr
-   \code{GOTYPE} \tab Types of GO terms ('BP'=biological process, 'CC'=cellular \cr
-   component, 'MF'=molecular function) associated to a gene \tab  \cr
+   \code{GOTYPE} \tab Types of GO terms ('BP'=biological process, 'CC'=cellular component, 'MF'=molecular function) associated to a gene \cr
    \code{KEGGPATH} \tab IDs of KEGG pathways associated to a gene \cr
    \code{KEGGPATHNAME} \tab Names of KEGG pathways associated to a gene \cr
    \code{REACTOMEPATH} \tab IDs of Reactome pathways associated to a gene \cr
    \code{REACTOMEPATHNAME} \tab Names of Reactome pathways associated to a gene \cr
    \code{WIKIPATH} \tab IDs of Wikipathways pathways associated to a gene \cr
    \code{WIKIPATHNAME} \tab Names of Wikipathways pathways associated to a gene \cr
+}
+
+
+Here is a list of the most representative species-specific IDs in
+in the annotation databases of \pkg{geneslator} package. Type
+\code{columns(org)} to retrieve the list of species-specific IDs for organism
+\code{org}.\tabular{lll}{
+   Organism \tab Column \tab Description \cr
+   Human \tab \code{HGNC} \tab Gene ID in HUGO Gene Nomenclature Committee \cr
+   Mouse \tab \code{MGI} \tab Gene ID in Mouse Genome Informatics \cr
+   Rat \tab \code{RGD} \tab Gene ID in Rat Genome Database \cr
+   Yeast \tab \code{SGD} \tab Gene ID in Saccharomyces Genome Database \cr
+   Worm \tab \code{WORMBASE} \tab Gene ID in WormBase database \cr
+   Fly \tab \code{FLYBASE} \tab Gene ID in FlyBase database \cr
+   Zebrafish \tab \code{ZFIN} \tab Gene ID in Zebrafish Information Network \cr
+   Arabidopsis \tab \code{TAIR} \tab Gene ID in The Arabidopsis Information Resource \cr
 }
 }
 \examples{

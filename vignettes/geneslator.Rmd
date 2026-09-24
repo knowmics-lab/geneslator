@@ -68,7 +68,7 @@ Key Features:
 -   **Multi-organism support**: Integrates annotation data from several model 
     organisms into a unique R package.
 
-**geneslator** currently supports 14 different organisms, including Human, 
+**geneslator** currently supports 25 different organisms, including Human, 
 Mouse, Rat, Yeast, Worm, Fly, Zebrafish, Arabidopsis and other plant species.
 In the future releases of the package, the number of supported species will 
 increase to include more model organisms.
@@ -386,7 +386,7 @@ sessionInfo()
 
 -   Micale G, Cavallaro G, Privitera GF (2026). geneslator: A
     Comprehensive Gene Identifier Conversion Tool. R package version
-    0.99.3.
+    0.99.15.
 
 -   Pages H, Carlson M, Falcon S, Li N (2024). AnnotationDbi:
     Manipulation of SQLite-based annotations in Bioconductor. R package.
@@ -396,6 +396,8 @@ sessionInfo()
 -   Ensembl: <https://www.ensembl.org>
 
 -   UniProt: <https://www.uniprot.org>
+
+-   HCOP: <https://www.genenames.org/tools/hcop/>
 
 -   Gene Ontology: <http://geneontology.org>
 

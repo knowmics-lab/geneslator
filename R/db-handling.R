@@ -142,15 +142,16 @@ NULL
 #' @noRd
 .getOrgFromTaxid <- function(taxid) {
   org.list <- c(
-    "Homo sapiens", "Mus musculus", "Rattus norvegicus",
-    "Danio rerio", "Drosophila melanogaster", "Caenorhabditis elegans",
-    "Saccharomyces cerevisiae", "Arabidopsis thaliana", "Brassica oleracea",
-    "Brassica napus", "Solanum lycopersicum", "Vitis vinifera",
-    "Lupinus angustifolius", "Phaseolus vulgaris"
+    "Apis mellifera","Arabidopsis thaliana","Bos taurus","Brassica napus","Brassica oleracea",
+    "Caenorhabditis elegans","Canis lupus familiaris","Danio rerio","Drosophila melanogaster",
+    "Escherichia coli K12 MG1655","Gallus gallus","Homo sapiens","Lupinus angustifolius","Macaca mulatta",
+    "Mus musculus","Oryza sativa","Phaseolus vulgaris","Rattus norvegicus","Saccharomyces cerevisiae",
+    "Schizosaccharomyces pombe","Solanum lycopersicum","Vitis vinifera","Xenopus laevis","Xenopus tropicalis",
+    "Zea mays"
   )
   names(org.list) <- c(
-    "9606", "10090", "10116", "7955", "7227", "6239", "559292",
-    "3702", "3712", "3708", "4081", "29760", "3871", "3885"
+    "7460","3702","9913","3708","109376","6239","9615","7955","7227","511145","9031","9606","3871","9544",
+    "10090","39947","3885","10116","559292","284812","4081","29760","8355","8364","4577"
   )
   return(org.list[as.character(taxid)])
 }

@@ -19,26 +19,32 @@ Four different types of data about a gene are integrated: annotations from gener
 
 ## Supported organisms
 
-Currently, annotation databases have been built for the following 19 organisms:
+Currently, annotation databases have been built for the following 25 model organisms:
 
-- *Homo sapiens* (Human)
-- *Mus musculus* (Mouse)
-- *Rattus norvegicus* (Rat)
+- *Apis mellifera* (Honey Bee)
+- *Arabidopsis thaliana* (Arabidopsis)
+- *Bos taurus* (Cattle)
+- *Brassica napus* (Rapeseed)
+- *Brassica oleracea* (Cabbage)
+- *Caenorhabditis elegans* (Worm)
+- *Canis lupus familiaris* (Dog)
 - *Danio rerio* (Zebrafish)
 - *Drosophila melanogaster* (Fly)
-- *Caenorhabditis elegans* (Worm)
+- *Escherichia coli K12 MG1655* (Ecoli K12)
+- *Gallus gallus* (Chicken)
+- *Homo sapiens* (Human)
+- *Lupinus angustifolius* (Blue Lupin)
+- *Macaca mulatta* (Macaque)
+- *Mus musculus* (Mouse)
+- *Oryza sativa* (Rice)
+- *Phaseolus vulgaris* (Common Bean)
+- *Rattus norvegicus* (Rat)
 - *Saccharomyces cerevisiae* (Yeast)
-- *Arabidopsis thaliana* (Arabidopsis)
-- *Brassica oleracea* (Cabbage)
-- *Brassica napus* (Rapeseed)
+- *Schizosaccharomyces pombe* (Fission Yeast)
 - *Solanum lycopersicum* (Tomato)
 - *Vitis vinifera* (Grapevine)
-- *Lupinus angustifolius* (Blue lupin)
-- *Phaseolus vulgaris* (Common bean)
-- *Macaca mulatta* (Macaque)
-- *Apis mellifera* (Honey Bee)
 - *Xenopus laevis* (African Clawed Frog)
-- *Oryza sativa* (Rice)
+- *Xenopus tropicalis* (Tropical Clawed Frog)
 - *Zea mays* (Maize)
 
 More organisms will be included in future releases of **geneslator**.
@@ -181,8 +187,7 @@ If you use geneslator in your work, please cite:
 citation("geneslator")
 ```
 
-geneslator: an R package for comprehensive gene identifier conversion and annotation. Giulia Cavallaro, Giovanni Micale, Grete Francesca Privitera, Alfredo Pulvirenti, Stefano Forte, Salvatore Alaimo. bioRxiv 2026.03.30.714723; doi: https://doi.org/10.64898/2026.03.30.714723 
-
+Cavallaro, G., Micale, G., Privitera, G.F. et al. Geneslator: an R package for comprehensive gene identifier conversion and annotation. BMC Bioinformatics (2026). https://doi.org/10.1186/s12859-026-06617-7
 
 Micale G, Cavallaro G, Privitera GF (2026). geneslator: A Comprehensive Gene Identifier Conversion Tool. R package version 0.99.0. https://github.com/knowmics-lab/geneslator
 
@@ -195,6 +200,9 @@ This package is released under the Artistic-2.0 license. See the [LICENSE](LICEN
 - **Giovanni Micale** - *Author and maintainer* - [ORCID](https://orcid.org/0000-0002-4953-026X)
 - **Giulia Cavallaro** - *Author* - [ORCID](https://orcid.org/0009-0000-1212-8368)
 - **Grete Francesca Privitera** - *Author* - [ORCID](https://orcid.org/0000-0003-1807-4780)
+- **Alfredo Pulvirenti** - *Author* - [ORCID](https://orcid.org/0000-0002-9764-0295)
+- **Stefano Forte** - *Author* - [ORCID](https://orcid.org/0000-0001-5746-7451)
+- **Salvatore Alaimo** - *Author* - [ORCID](https://orcid.org/0000-0003-4825-7617)
 
 University of Catania
 
@@ -208,6 +216,7 @@ University of Catania
 - NCBI Gene: https://www.ncbi.nlm.nih.gov/gene
 - Ensembl: https://www.ensembl.org
 - UniProt: https://www.uniprot.org
+- HCOP: https://www.genenames.org/tools/hcop/
 - Gene Ontology: http://geneontology.org
 - KEGG: https://www.kegg.jp
 - Reactome: https://reactome.org

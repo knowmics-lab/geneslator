@@ -634,43 +634,27 @@ function(x, keys, column, keytype, search.aliases = TRUE, search.archives = TRUE
 #' can be used as output when querying `x`, i.e., all possible values of the
 #' `column` argument in [mapIds()] and [select()] functions.
 #'
-#' The following is the complete list of columns defined in the annotation
+#' The following is a list of columns shared by all organisms in the annotation
 #' databases of \pkg{geneslator} package. Some of these columns may be missing
-#' in one or more organisms.
+#' in one or more organisms, if no data is available for that organism. 
 #'
 #' | Column | Description |
 #' | :--- | :--- |
 #' | `SYMBOL` | Official gene symbol |
 #' | `ALIAS` | Aliases of a gene |
+#' | `LOCUS` | Locus tag of a gene |
 #' | `GENETYPE` | Biological type of a gene (e.g. 'protein-coding', 'ncRNA') |
 #' | `GENENAME` | Full name or description of a gene |
 #' | `ENTREZID` | Gene ID in NCBI Gene |
 #' | `ENSEMBL` | Gene ID in Ensembl |
-#' | `HGNC` | Gene ID in HUGO Gene Nomenclature Committee (Human only) |
-#' | `MGI` | Gene ID in Mouse Genome Informatics (Mouse only) |
-#' | `RGD` | Gene ID in Rat Genome Database (Rat only) |
-#' | `SGD` | Gene ID in Saccharomyces Genome Database (Yeast only) |
-#' | `WORMBASE` | Gene ID in WormBase database (Worm only) |
-#' | `FLYBASE` | Gene ID in FlyBase database (Fly only) |
-#' | `ZFIN` | Gene ID in Zebrafish Information Network (Zebrafish only) |
-#' | `TAIR` | Gene ID in The Arabidopsis Information Resource (Arabidopsis
-#' only) |
-#' | `UNIPROTKB` | Uniprot IDs of proteins associated to a gene |
+#' | `UNIPROT` | Uniprot IDs of proteins associated to a gene |
 #' | `ENTREZIDOLD` | Archived IDs in NCBI Gene |
 #' | `ENSEMBLOLD` | Archived IDs in Ensembl |
-#' | `ORTHOHUMAN` | Orthologs in Human (absent in Human and Arabidopsis) |
-#' | `ORTHOMOUSE` | Orthologs in Mouse (absent in Mouse and Arabidopsis) |
-#' | `ORTHORAT` | Orthologs in Rat (absent in Rat and Arabidopsis) |
-#' | `ORTHOYEAST` | Orthologs in Yeast (absent in Yeast and Arabidopsis) |
-#' | `ORTHOWORM` | Orthologs in Worm (absent in Worm and Arabidopsis) |
-#' | `ORTHOFLY` | Orthologs in Fly (absent in Fly and Arabidopsis) |
-#' | `ORTHOZEBRAFISH` | Orthologs in Zebrafish (absent in Zebrafish and
-#' Arabidopsis) |
+#' | `ORTHO[org]` | Orthologs in species `[org]`, where `[org]` is the upper-case common name of one of the organism present in \pkg{geneslator} |
 #' | `GO` | IDs of Gene Ontology (GO) terms associated to a gene |
 #' | `GONAME` | Names of GO terms associated to a gene |
 #' | `GOEVIDENCE` | Evidence codes of GO terms associated to a gene |
-#' | `GOTYPE` | Types of GO terms ('BP'=biological process, 'CC'=cellular
-#' component, 'MF'=molecular function) associated to a gene |
+#' | `GOTYPE` | Types of GO terms ('BP'=biological process, 'CC'=cellular component, 'MF'=molecular function) associated to a gene |
 #' | `KEGGPATH` | IDs of KEGG pathways associated to a gene |
 #' | `KEGGPATHNAME` | Names of KEGG pathways associated to a gene |
 #' | `REACTOMEPATH` | IDs of Reactome pathways associated to a gene |
@@ -678,6 +662,22 @@ function(x, keys, column, keytype, search.aliases = TRUE, search.archives = TRUE
 #' | `WIKIPATH` | IDs of Wikipathways pathways associated to a gene |
 #' | `WIKIPATHNAME` | Names of Wikipathways pathways associated to a gene |
 #'
+#' Here is a list of the most representative species-specific IDs in 
+#' in the annotation databases of \pkg{geneslator} package. Type 
+#' `columns(org)` to retrieve the list of species-specific IDs for organism 
+#' `org`.
+#' 
+#' | Organism | Column | Description |
+#' | :--- | :--- | :--- |
+#' | Human | `HGNC` | Gene ID in HUGO Gene Nomenclature Committee |
+#' | Mouse | `MGI` | Gene ID in Mouse Genome Informatics |
+#' | Rat | `RGD` | Gene ID in Rat Genome Database |
+#' | Yeast | `SGD` | Gene ID in Saccharomyces Genome Database |
+#' | Worm | `WORMBASE` | Gene ID in WormBase database |
+#' | Fly | `FLYBASE` | Gene ID in FlyBase database |
+#' | Zebrafish | `ZFIN` | Gene ID in Zebrafish Information Network |
+#' | Arabidopsis | `TAIR` | Gene ID in The Arabidopsis Information Resource |
+#' 
 #' @return `keytypes()` and `columns()` return a character vector of column
 #' names of database `x`.
 #'
